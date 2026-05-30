@@ -1,0 +1,16 @@
+Place,Type,Budget,Climate,Rating,Image,Map
+Goa,Beach,High,Hot,4.8,goa.jpg,https://maps.google.com/?q=Goa
+Ooty,Hill Station,Medium,Cold,4.5,ooty.jpg,https://maps.google.com/?q=Ooty
+Mysore,Historical,Low,Moderate,4.3,mysore.jpg,https://maps.google.com/?q=Mysore
+Manali,Adventure,High,Cold,4.7,manali.jpg,https://maps.google.com/?q=Manali
+Jaipur,Cultural,Medium,Hot,4.4,jaipur.jpg,https://maps.google.com/?q=Jaipur
+Kerala,Nature,Medium,Moderate,4.9,kerala.jpg,https://maps.google.com/?q=Kerala
+Andaman,Beach,High,Hot,4.8,andaman.jpg,https://maps.google.com/?q=Andaman
+Shimla,Hill Station,Medium,Cold,4.5,shimla.jpg,https://maps.google.com/?q=Shimla
+Coorg,Nature,Low,Moderate,4.4,coorg.jpg,https://maps.google.com/?q=Coorg
+Darjeeling,Hill Station,Medium,Cold,4.6,darjeeling.jpg,https://maps.google.com/?q=Darjeeling
+Pondicherry,Beach,Medium,Hot,4.5,pondicherry.jpg,https://maps.google.com/?q=Pondicherry
+Rishikesh,Adventure,Low,Moderate,4.6,rishikesh.jpg,https://maps.google.com/?q=Rishikesh
+Varanasi,Religious,Low,Hot,4.2,varanasi.jpg,https://maps.google.com/?q=Varanasi
+Agra,Historical,Medium,Hot,4.3,agra.jpg,https://maps.google.com/?q=Agra
+Leh,Adventure,High,Cold,4.9,leh.jpg,https://maps.google.com/?q=Leh
