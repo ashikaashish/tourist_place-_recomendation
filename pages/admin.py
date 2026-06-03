@@ -1,7 +1,12 @@
 import streamlit as st
 import pandas as pd
 import sqlite3
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from styles import apply_styles
 
+st.set_page_config(page_title="...", page_icon="🌍", layout="centered")
+apply_styles()   # ← one line does everything
 st.set_page_config(
     page_title="Admin Dashboard",
     page_icon="📊",
@@ -9,6 +14,16 @@ st.set_page_config(
 )
 
 st.title("📊 Admin Dashboard")
+st.markdown('</div>', unsafe_allow_html=True)
+# Back button
+if st.button("← Back to Home"):
+    st.switch_page("welcome.py")
+st.markdown("""
+<style>
+[data-testid="stSidebar"]        { display: none !important; }
+[data-testid="collapsedControl"] { display: none !important; }
+</style>
+""", unsafe_allow_html=True)
 
 # Database Connection
 conn = sqlite3.connect("tourist.db")

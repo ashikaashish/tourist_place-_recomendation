@@ -3,7 +3,12 @@ import pandas as pd
 import pickle
 import sqlite3
 import os
+import sys, os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from styles import apply_styles
 
+st.set_page_config(page_title="...", page_icon="🌍", layout="centered")
+apply_styles()   # ← one line does everything
 # ---------------------------------------------------
 # Page Configuration
 # ---------------------------------------------------
@@ -12,6 +17,16 @@ st.set_page_config(
     page_icon="🌍",
     layout="wide"
 )
+st.markdown('</div>', unsafe_allow_html=True)
+# Back button
+if st.button("← Back to Home"):
+    st.switch_page("welcome.py")
+st.markdown("""
+<style>
+[data-testid="stSidebar"]        { display: none !important; }
+[data-testid="collapsedControl"] { display: none !important; }
+</style>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------
 # Paths
