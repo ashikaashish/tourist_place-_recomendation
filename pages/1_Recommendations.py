@@ -3,12 +3,10 @@ import pandas as pd
 import pickle
 import sqlite3
 import os
-import sys, os
+import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from styles import apply_styles
 
-st.set_page_config(page_title="...", page_icon="🌍", layout="centered")
-apply_styles()   # ← one line does everything
 # ---------------------------------------------------
 # Page Configuration
 # ---------------------------------------------------
@@ -17,10 +15,12 @@ st.set_page_config(
     page_icon="🌍",
     layout="wide"
 )
-st.markdown('</div>', unsafe_allow_html=True)
+apply_styles()
+
 # Back button
 if st.button("← Back to Home"):
     st.switch_page("welcome.py")
+
 st.markdown("""
 <style>
 [data-testid="stSidebar"]        { display: none !important; }
@@ -42,17 +42,19 @@ def init_db():
     cursor = conn.cursor()
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS ratings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            place TEXT,
-            rating INTEGER
+            id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            place   TEXT    NOT NULL,
+            rating  INTEGER NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS likes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT,
-            place TEXT
+            id      INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            place   TEXT    NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
     conn.commit()
@@ -63,13 +65,28 @@ init_db()
 # ---------------------------------------------------
 # DB Helper Functions
 # ---------------------------------------------------
-def save_rating(username, place, rating):
+def get_user_id(username):
+    """Return the integer id for a given username, or None if not found."""
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
+        cursor.execute("SELECT id FROM users WHERE name = ?", (username,))
+        row = cursor.fetchone()
+        conn.close()
+        return row[0] if row else None
+    except Exception:
+        return None
+
+def save_rating(username, place, rating):
+    try:
+        user_id = get_user_id(username)
+        if user_id is None:
+            return False, "User not found in database."
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO ratings (username, place, rating) VALUES (?, ?, ?)",
-            (username, place, rating)
+            "INSERT INTO ratings (user_id, place, rating) VALUES (?, ?, ?)",
+            (user_id, place, rating)
         )
         conn.commit()
         conn.close()
@@ -79,18 +96,21 @@ def save_rating(username, place, rating):
 
 def save_like(username, place):
     try:
+        user_id = get_user_id(username)
+        if user_id is None:
+            return False, "User not found in database."
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute(
-            "SELECT id FROM likes WHERE username=? AND place=?",
-            (username, place)
+            "SELECT id FROM likes WHERE user_id=? AND place=?",
+            (user_id, place)
         )
         if cursor.fetchone():
             conn.close()
             return False, "already_liked"
         cursor.execute(
-            "INSERT INTO likes (username, place) VALUES (?, ?)",
-            (username, place)
+            "INSERT INTO likes (user_id, place) VALUES (?, ?)",
+            (user_id, place)
         )
         conn.commit()
         conn.close()
@@ -116,20 +136,16 @@ st.markdown("""
 
 * { font-family: 'Poppins', sans-serif; }
 
-/* ── Animated gradient background ── */
 .stApp {
     background: linear-gradient(-45deg, #0f0c29, #302b63, #1a1a2e, #16213e, #0f3460);
     background-size: 400% 400%;
     animation: gradientShift 12s ease infinite;
 }
-
 @keyframes gradientShift {
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
-
-/* ── Floating particles overlay ── */
 .stApp::before {
     content: '';
     position: fixed;
@@ -142,10 +158,8 @@ st.markdown("""
     pointer-events: none;
     z-index: 0;
 }
-
 html, body, [class*="css"] { color: #e2e8f0; }
 
-/* ── Title animation ── */
 .main-title {
     text-align: center;
     font-size: 52px;
@@ -158,18 +172,15 @@ html, body, [class*="css"] { color: #e2e8f0; }
     animation: titleGradient 5s ease infinite, fadeSlideDown 0.8s ease both;
     margin-bottom: 6px;
 }
-
 @keyframes titleGradient {
     0%   { background-position: 0% 50%; }
     50%  { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
 }
-
 @keyframes fadeSlideDown {
     from { opacity: 0; transform: translateY(-30px); }
     to   { opacity: 1; transform: translateY(0); }
 }
-
 .sub-title {
     text-align: center;
     font-size: 17px;
@@ -177,8 +188,6 @@ html, body, [class*="css"] { color: #e2e8f0; }
     margin-bottom: 40px;
     animation: fadeSlideDown 0.8s ease 0.2s both;
 }
-
-/* ── Sidebar ── */
 section[data-testid="stSidebar"] {
     background: linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
     border-right: 1px solid rgba(99,102,241,0.3);
@@ -189,8 +198,6 @@ section[data-testid="stSidebar"] .stSuccess {
     border: 1px solid rgba(99,102,241,0.4) !important;
     border-radius: 10px !important;
 }
-
-/* ── Buttons ── */
 .stButton > button {
     width: 100%;
     background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2));
@@ -220,18 +227,6 @@ section[data-testid="stSidebar"] .stSuccess {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(99,102,241,0.4);
 }
-
-/* ── Get Recommendations button ── */
-div[data-testid="stButton"]:has(button[kind="primary"]) > button,
-.get-rec .stButton > button {
-    background: linear-gradient(135deg, #667eea, #764ba2) !important;
-    border: none !important;
-    font-size: 16px !important;
-    font-weight: 600 !important;
-    box-shadow: 0 4px 20px rgba(102,126,234,0.5) !important;
-}
-
-/* ── Selectboxes ── */
 div[data-baseweb="select"] > div {
     background: rgba(30,27,75,0.8) !important;
     color: #e2e8f0 !important;
@@ -250,8 +245,6 @@ div[role="option"] {
 div[role="option"]:hover {
     background: rgba(99,102,241,0.3) !important;
 }
-
-/* ── Number input ── */
 input[type="number"] {
     background: rgba(30,27,75,0.8) !important;
     color: #ffffff !important;
@@ -265,8 +258,6 @@ input[type="number"]:focus {
     border-color: #a78bfa !important;
     box-shadow: 0 0 0 3px rgba(167,139,250,0.2) !important;
 }
-
-/* ── Recommendation card ── */
 .rec-card {
     background: rgba(15,12,41,0.7);
     border: 1px solid rgba(99,102,241,0.25);
@@ -275,7 +266,6 @@ input[type="number"]:focus {
     margin-bottom: 32px;
     backdrop-filter: blur(20px);
     animation: cardFadeIn 0.6s ease both;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
     box-shadow: 0 4px 30px rgba(0,0,0,0.3);
     position: relative;
     overflow: hidden;
@@ -288,13 +278,10 @@ input[type="number"]:focus {
     background: linear-gradient(90deg, #667eea, #f093fb, #4facfe);
     border-radius: 24px 24px 0 0;
 }
-
 @keyframes cardFadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
 }
-
-/* ── Rating block ── */
 .rating-block {
     background: rgba(30,27,75,0.6);
     border: 1px solid rgba(99,102,241,0.3);
@@ -311,31 +298,14 @@ input[type="number"]:focus {
     letter-spacing: 0.5px;
     text-transform: uppercase;
 }
-
-/* ── Stars ── */
-.star-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 14px;
-}
-.star {
-    font-size: 24px;
-    color: rgba(99,102,241,0.3);
-    transition: color 0.3s, transform 0.2s;
-}
-.star.filled {
-    color: #fbbf24;
-    text-shadow: 0 0 10px rgba(251,191,36,0.5);
-    animation: starPop 0.4s ease;
-}
+.star-row { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+.star { font-size: 24px; color: rgba(99,102,241,0.3); transition: color 0.3s, transform 0.2s; }
+.star.filled { color: #fbbf24; text-shadow: 0 0 10px rgba(251,191,36,0.5); animation: starPop 0.4s ease; }
 @keyframes starPop {
     0%   { transform: scale(1); }
     50%  { transform: scale(1.4); }
     100% { transform: scale(1); }
 }
-
-/* ── Maps link button ── */
 .btn-maps {
     display: flex;
     align-items: center;
@@ -362,13 +332,7 @@ input[type="number"]:focus {
     transform: translateY(-2px);
     color: #ffffff !important;
 }
-
-/* ── Section headings ── */
-h1, h2, h3 {
-    color: #e2e8f0 !important;
-}
-
-/* ── Welcome text ── */
+h1, h2, h3 { color: #e2e8f0 !important; }
 .welcome-badge {
     display: inline-block;
     background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2));
@@ -380,8 +344,6 @@ h1, h2, h3 {
     margin-bottom: 20px;
     animation: fadeSlideDown 0.6s ease both;
 }
-
-/* ── Footer ── */
 .footer {
     text-align: center;
     font-size: 15px;
@@ -394,22 +356,12 @@ h1, h2, h3 {
     font-weight: 600;
     letter-spacing: 2px;
 }
-
-/* ── Pulse animation for get-rec button ── */
-@keyframes pulse {
-    0%, 100% { box-shadow: 0 4px 20px rgba(102,126,234,0.4); }
-    50%       { box-shadow: 0 4px 40px rgba(102,126,234,0.8); }
-}
-
-/* ── Info/success/warning messages ── */
 div[data-testid="stAlert"] {
     background: rgba(30,27,75,0.8) !important;
     border-radius: 12px !important;
     border: 1px solid rgba(99,102,241,0.3) !important;
     backdrop-filter: blur(10px);
 }
-
-/* ── Section header style ── */
 .section-header {
     font-size: 26px;
     font-weight: 600;
@@ -419,14 +371,9 @@ div[data-testid="stAlert"] {
     background-clip: text;
     margin: 30px 0 20px 0;
 }
-
-/* ── Scrollbar ── */
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #0f0c29; }
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(#667eea, #764ba2);
-    border-radius: 3px;
-}
+::-webkit-scrollbar-thumb { background: linear-gradient(#667eea, #764ba2); border-radius: 3px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -521,15 +468,13 @@ if "recommendations" in st.session_state:
     else:
         for place in st.session_state["recommendations"]:
 
-            place_name = place["Place"]
-            image_path = os.path.join(BASE_DIR, "images", place["Image"])
+            place_name  = place["Place"]
+            image_path  = os.path.join(BASE_DIR, "images", place["Image"])
             crowd_level = predict_crowd(place_name, month, weekend, holiday)
-            map_url = place.get("Map", f"https://maps.google.com/?q={place_name},India")
+            map_url     = place.get("Map", f"https://maps.google.com/?q={place_name},India")
 
-            # ── Card open ──
             st.markdown('<div class="rec-card">', unsafe_allow_html=True)
 
-            # ── Image + Info ──
             col1, col2 = st.columns([1, 2])
             with col1:
                 try:
@@ -572,10 +517,7 @@ if "recommendations" in st.session_state:
                 with rcol1:
                     user_rating = st.number_input(
                         "Rating",
-                        min_value=1,
-                        max_value=5,
-                        value=3,
-                        step=1,
+                        min_value=1, max_value=5, value=3, step=1,
                         key=f"rating_{place_name}",
                         label_visibility="collapsed"
                     )
@@ -614,8 +556,7 @@ if "recommendations" in st.session_state:
                     </a>
                 """, unsafe_allow_html=True)
 
-            # ── Card close ──
-            st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('</div>', unsafe_allow_html=True)  # close rec-card
 
 # ---------------------------------------------------
 # Footer

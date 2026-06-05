@@ -1,4 +1,3 @@
-
 Claude finished the response
 
 home.py
@@ -253,17 +252,19 @@ def init_db():
         """)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS likes (
-                id       INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL,
-                place    TEXT NOT NULL
+                id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                place   TEXT    NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
             )
         """)
         conn.execute("""
             CREATE TABLE IF NOT EXISTS ratings (
-                id       INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT NOT NULL,
-                place    TEXT NOT NULL,
-                rating   INTEGER NOT NULL
+                id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                place   TEXT    NOT NULL,
+                rating  INTEGER NOT NULL,
+                FOREIGN KEY (user_id) REFERENCES users(id)
             )
         """)
  
@@ -280,4 +281,3 @@ def reset_and_init_db():
  
 if __name__ == "__main__":
     reset_and_init_db()
- 
