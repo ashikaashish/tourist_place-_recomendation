@@ -8,14 +8,131 @@ import os
 st.set_page_config(
     page_title="Tourist Place Recommendation",
     page_icon="🌍",
-    layout="centered"
+    layout="wide"
 )
 st.markdown("""
 <style>
 [data-testid="stSidebar"]        { display: none !important; }
 [data-testid="collapsedControl"] { display: none !important; }
+
+/* ===== Welcome Page Ticker + Navbar ===== */
+.ticker-wrap{
+position:fixed;top:0;left:0;right:0;z-index:2000;
+background:linear-gradient(90deg,#1a1410,#2d2218,#1a1410);
+height:34px;display:flex;align-items:center;overflow:hidden;
+border-bottom:1px solid rgba(201,169,110,0.3);
+}
+.ticker-track{display:flex;white-space:nowrap;animation:tickerScroll 30s linear infinite;}
+.ticker-item{padding:0 2rem;color:#c9a96e;font-size:12px;text-transform:uppercase;}
+@keyframes tickerScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+.navbar-shell{
+position:fixed;top:34px;left:0;right:0;height:66px;z-index:1500;
+background:rgba(250,250,248,0.95);
+backdrop-filter:blur(20px);
+border-bottom:1px solid rgba(201,169,110,0.18);
+}
+.nav-brand{
+position:fixed;top:34px;left:3rem;height:66px;
+display:flex;align-items:center;z-index:1600;
+font-weight:600;color:#1a1814;
+}
+
+
+/* ===== WELCOME THEME OVERRIDES ===== */
+header,[data-testid="stHeader"],[data-testid="stToolbar"],
+[data-testid="stDecoration"],#MainMenu,footer{
+display:none !important;
+}
+
+.block-container{
+padding-top:0 !important;
+}
+
+html,body,.stApp{
+background:#fafaf8 !important;
+color:#1a1814 !important;
+}
+
+.form-card{
+background:#ffffff !important;
+border:1px solid rgba(201,169,110,0.20) !important;
+box-shadow:0 20px 60px rgba(0,0,0,0.08) !important;
+}
+
+.hero-title,.hero-subtitle,label,p,h1,h2,h3{
+color:#1a1814 !important;
+}
+
+input, textarea{
+color:#1a1814 !important;
+}
+
+
+/* ===== FIXED NAVBAR BUTTON ===== */
+div[data-testid="stHorizontalBlock"]{
+    align-items:center !important;
+}
+div[data-testid="stHorizontalBlock"] .stButton button[key="top_home"]{
+}
+
+/* Top home button */
+div[data-testid="stButton"] > button[kind="secondary"],
+div[data-testid="stButton"] > button{
+}
+
+/* Light form fields */
+input[type="text"], input[type="number"], input[type="password"]{
+    background:#ffffff !important;
+    color:#1a1814 !important;
+    border:1px solid #d4c09a !important;
+}
+
+div[data-baseweb="select"] > div{
+    background:#ffffff !important;
+    color:#1a1814 !important;
+    border:1px solid #d4c09a !important;
+}
+
+label, .stTextInput label, .stNumberInput label, .stSelectbox label{
+    color:#4a3d2a !important;
+}
+
+.form-card{
+    background:#ffffff !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
+
+st.markdown('''
+<style>
+.hero{
+background-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1920&q=90');
+background-size:cover;
+background-position:center;
+min-height:460px;
+border-radius:28px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+position:relative;
+overflow:hidden;
+}
+.hero::before{
+content:'';
+position:absolute;
+inset:0;
+background:rgba(255,255,255,0.15);
+animation:kenburns 20s ease-in-out infinite alternate;
+}
+@keyframes kenburns{
+from{transform:scale(1);}
+to{transform:scale(1.1);}
+}
+</style>
+''', unsafe_allow_html=True)
 
 
 PAGES_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -251,15 +368,29 @@ div[role="option"]:hover { background: rgba(99,102,241,0.3) !important; }
     box-shadow: 0 12px 40px rgba(102,126,234,0.75) !important;
     background-position: right center !important;
 }
-/* Make back button smaller and left-aligned */
-div[data-testid="stButton"]:first-of-type > button {
-    width: auto !important;
-    padding: 8px 20px !important;
-    font-size: 13px !important;
-    background: rgba(99,102,241,0.15) !important;
-    box-shadow: none !important;
-    border: 1px solid rgba(99,102,241,0.3) !important;
-    animation: none !important;
+/* Navbar button styling */
+div[data-testid="stHorizontalBlock"]{
+    position:fixed !important;
+    top:34px !important;
+    right:40px !important;
+    z-index:2000 !important;
+    background:transparent !important;
+}
+div[data-testid="stHorizontalBlock"] .stButton button{
+    width:auto !important;
+    height:38px !important;
+    padding:0 20px !important;
+    background:rgba(30,20,10,0.05) !important;
+    color:#4a3d2a !important;
+    border:1.5px solid rgba(60,40,20,0.15) !important;
+    border-radius:8px !important;
+    box-shadow:none !important;
+    animation:none !important;
+}
+div[data-testid="stHorizontalBlock"] .stButton button:hover{
+    background:rgba(30,20,10,0.10) !important;
+    border-color:rgba(60,40,20,0.30) !important;
+    transform:translateY(-2px) !important;
 }
 .stButton > button:active { transform: translateY(0px) scale(0.99) !important; }
 
@@ -270,22 +401,74 @@ div[data-testid="stAlert"] {
     animation: fadeSlideDown 0.4s ease both;
 }
 
-.stats-row {
-    display: flex; justify-content: center; gap: 16px;
-    margin-bottom: 30px; animation: fadeSlideDown 0.8s ease 0.5s both;
+/* ===== PREMIUM STATS CARDS ===== */
+
+.stats-row{
+    display:flex;
+    justify-content:center;
+    gap:30px;
+    margin:45px 0;
 }
-.stat-box {
-    background: rgba(15,12,41,0.6); border: 1px solid rgba(99,102,241,0.2);
-    border-radius: 16px; padding: 16px 20px; text-align: center;
-    backdrop-filter: blur(10px); flex: 1; transition: transform 0.3s, box-shadow 0.3s;
+
+.stat-box{
+    flex:1;
+    background:#ffffff !important;
+    border-radius:24px;
+    padding:35px 25px;
+    text-align:center;
+    border:1px solid #edf2f7;
+    box-shadow:0 12px 30px rgba(0,0,0,0.08);
 }
-.stat-box:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(99,102,241,0.3); }
-.stat-number {
-    font-size: 26px; font-weight: 700;
-    background: linear-gradient(135deg, #667eea, #f093fb);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+
+.stat-icon{
+    width:90px;
+    height:90px;
+    margin:0 auto 20px;
+    border-radius:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:46px;
 }
-.stat-label { font-size: 11px; color: #64748b; font-weight: 500; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 2px; }
+
+.icon-blue{
+    background:#eef6ff;
+}
+
+.icon-green{
+    background:#ecfdf3;
+}
+
+.icon-gold{
+    background:#fff8e7;
+}
+
+.stat-number{
+    font-size:60px;
+    font-weight:900;
+    line-height:1;
+    margin-bottom:10px;
+}
+
+.blue{
+    color:#2196f3;
+}
+
+.green{
+    color:#22c55e;
+}
+
+.gold{
+    color:#fbbf24;
+}
+
+.stat-label{
+    font-size:20px;
+    font-weight:800;
+    color:#16213e;
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
 
 .footer { text-align: center; font-size: 13px; margin-top: 30px; padding-bottom: 30px; color: #334155; animation: fadeSlideDown 1s ease 0.6s both; }
 .footer span {
@@ -306,6 +489,34 @@ div[data-testid="stAlert"] {
   <div class="particle"></div><div class="particle"></div>
 </div>
 """, unsafe_allow_html=True)
+
+
+st.markdown("""
+<div class="ticker-wrap">
+<div class="ticker-track">
+<span class="ticker-item">🌍 AI Powered Travel</span>
+<span class="ticker-item">✈️ Smart Planning</span>
+<span class="ticker-item">🏨 Curated Stays</span>
+<span class="ticker-item">⭐ 4.9 Rating</span>
+<span class="ticker-item">🌤 Climate Matched Trips</span>
+<span class="ticker-item">🌍 AI Powered Travel</span>
+<span class="ticker-item">✈️ Smart Planning</span>
+<span class="ticker-item">🏨 Curated Stays</span>
+<span class="ticker-item">⭐ 4.9 Rating</span>
+<span class="ticker-item">🌤 Climate Matched Trips</span>
+</div>
+</div>
+<div class="navbar-shell"></div>
+<div class="nav-brand">🌍 Smart Travel Planner</div>
+""", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns([10,1,1])
+
+with col3:
+    if st.button("🏠 Back to Home"):
+        st.switch_page("welcome.py")
+
+st.markdown("<div style='height:110px'></div>", unsafe_allow_html=True)
 
 # ---------------------------------------------------
 # Hero Section
@@ -329,18 +540,25 @@ st.markdown("""
 # ---------------------------------------------------
 st.markdown("""
 <div class="stats-row">
+
     <div class="stat-box">
-        <div class="stat-number">500+</div>
-        <div class="stat-label">Destinations</div>
+        <div class="stat-icon icon-blue">📍</div>
+        <div class="stat-number blue">500+</div>
+        <div class="stat-label">DESTINATIONS</div>
     </div>
+
     <div class="stat-box">
-        <div class="stat-number">10K+</div>
-        <div class="stat-label">Travellers</div>
+        <div class="stat-icon icon-green">👥</div>
+        <div class="stat-number green">10K+</div>
+        <div class="stat-label">TRAVELLERS</div>
     </div>
+
     <div class="stat-box">
-        <div class="stat-number">4.9★</div>
-        <div class="stat-label">Avg Rating</div>
+        <div class="stat-icon icon-gold">⭐</div>
+        <div class="stat-number gold">4.9★</div>
+        <div class="stat-label">AVG RATING</div>
     </div>
+
 </div>
 """, unsafe_allow_html=True)
 
@@ -353,17 +571,23 @@ st.markdown('<div class="form-section-title">👤 Create Your Profile</div>', un
 name             = st.text_input("Full Name", placeholder="e.g. Arjun Sharma")
 password         = st.text_input("🔒 Password",         type="password", placeholder="Enter password")
 confirm_password = st.text_input("🔐 Confirm Password", type="password", placeholder="Confirm password")
-age              = st.number_input("Age", min_value=18, max_value=80, value=25, step=1)
+age = st.number_input("Age", min_value=18, max_value=80, value=25, step=1)
 
-col1, col2 = st.columns(2)
-with col1:
-    budget  = st.selectbox("💰 Budget",  ["Low", "Medium", "High"])
-with col2:
-    climate = st.selectbox("🌤 Climate", ["Hot", "Cold", "Moderate"])
+# Budget below Age
+budget = st.selectbox(
+    "💰 Budget",
+    ["Low", "Medium", "High"]
+)
+
+# Climate below Budget
+climate = st.selectbox(
+    "🌤 Climate",
+    ["Hot", "Cold", "Moderate"]
+)
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-if st.button("🚀  Start Exploring →"):
+if st.button("🚀 Register→"):
     # ── FIX 2: validate all required fields ──────────────────────────────────
     if not name.strip():
         st.warning("⚠️ Please enter your name to continue.")
@@ -395,9 +619,7 @@ if st.button("🚀  Start Exploring →"):
             st.error(f"❌ Database Error: {e}")
 
 st.markdown('</div>', unsafe_allow_html=True)
-# Back button
-if st.button("← Back to Home"):
-    st.switch_page("welcome.py")
+
 # ---------------------------------------------------
 # Footer
 # ---------------------------------------------------

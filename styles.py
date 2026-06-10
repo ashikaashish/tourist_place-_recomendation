@@ -262,3 +262,4 @@ def apply_styles():
       <div class="particle"></div><div class="particle"></div>
     </div>
     """, unsafe_allow_html=True)
+    

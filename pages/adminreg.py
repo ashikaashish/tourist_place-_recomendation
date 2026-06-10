@@ -334,3 +334,66 @@ if st.button("← Back to Home"):
     st.switch_page("welcome.py")
 
 st.markdown('<p class="footer-text">© 2025 Smart Travel Planner · Admin Console</p>', unsafe_allow_html=True)
+
+
+# ===== WELCOME.PY LUXURY THEME OVERRIDE =====
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+html,body,[data-testid="stAppViewContainer"]{
+    background:#fafaf8 !important;
+    color:#1a1814 !important;
+    font-family:'Inter',sans-serif !important;
+}
+
+.admin-card{
+    background:#ffffff !important;
+    border:1px solid rgba(201,169,110,.20) !important;
+}
+
+.admin-title{
+    font-family:'Cormorant Garamond',serif !important;
+    background:none !important;
+    -webkit-text-fill-color:#1a1814 !important;
+    color:#1a1814 !important;
+}
+
+.admin-subtitle,.footer-text,.access-badge{
+    color:#6b5a3e !important;
+}
+
+.stTextInput label{
+    color:#6b5a3e !important;
+}
+
+.stTextInput input{
+    background:#fff !important;
+    color:#1a1814 !important;
+    border:1.5px solid rgba(201,169,110,.30) !important;
+    border-radius:12px !important;
+}
+
+.stTextInput input:focus{
+    border-color:#c9a96e !important;
+    box-shadow:0 0 0 4px rgba(201,169,110,.12) !important;
+}
+
+div.stFormSubmitButton > button,
+.stButton > button{
+    background:linear-gradient(135deg,#c9a96e,#a87828) !important;
+    color:white !important;
+    border:none !important;
+}
+
+[data-testid="stAppViewContainer"]::before{
+    background:
+      radial-gradient(ellipse 70% 50% at 70% 0%,rgba(201,169,110,.15) 0%,transparent 65%),
+      radial-gradient(ellipse 55% 40% at 20% 100%,rgba(201,169,110,.08) 0%,transparent 65%) !important;
+}
+
+.shield-icon{
+    filter:none !important;
+}
+</style>
+""", unsafe_allow_html=True)
