@@ -17,26 +17,405 @@ st.set_page_config(
 )
 apply_styles()
 
-# Back button
-if st.button("← Back to Home"):
-    st.switch_page("welcome.py")
-
+# ---------------------------------------------------
+# CSS — same light theme as admin.py
+# ---------------------------------------------------
 st.markdown("""
 <style>
-[data-testid="stSidebar"]        { display: none !important; }
-[data-testid="collapsedControl"] { display: none !important; }
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
+
+* { font-family: 'Poppins', sans-serif; font-weight: 700; box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Hide Streamlit chrome */
+header, [data-testid="stHeader"], [data-testid="stToolbar"],
+[data-testid="stDecoration"], #MainMenu, footer,
+[data-testid="stSidebar"], [data-testid="collapsedControl"] {
+    display: none !important;
+}
+.block-container { padding-top: 0 !important; max-width: 100% !important; }
+
+/* Background */
+html, body, .stApp {
+    background: #f0f4fa !important;
+    color: #1f2937 !important;
+}
+.stApp > * { position: relative; z-index: 2; }
+
+/* Premium Ticker Bar */
+.ticker-wrap {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2000;
+    background: #1a1410;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    border-bottom: 1px solid #3b2d20;
+}
+
+.ticker-track {
+    display: flex;
+    white-space: nowrap;
+    animation: tickerScroll 30s linear infinite;
+}
+.ticker-item {
+    padding: 0 2rem;
+    color: #c9a96e !important;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@keyframes tickerScroll {
+    0% {
+        transform: translateX(0);
+    }
+    100% {
+        transform: translateX(-50%);
+    }
+}
+.ticker-item {
+    padding: 0 2rem;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Prevent global span color from overriding ticker */
+.ticker-wrap .ticker-item,
+.ticker-wrap .ticker-item * {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
+
+/* Navbar */
+.navbar-shell {
+    position: fixed; top: 34px; left: 0; right: 0; height: 64px; z-index: 1500;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+}
+.nav-brand {
+    position: fixed; top: 34px; left: 2.5rem; height: 64px;
+    display: flex; align-items: center; z-index: 1600;
+    font-weight: 800; font-size: 18px; color: #1a1814;
+    letter-spacing: -0.3px;
+}
+
+/* Spacer under fixed bars */
+.page-spacer { height: 114px; }
+
+/* Navbar home button */
+.st-key-navhome div[data-testid="stHorizontalBlock"] {
+    position: fixed !important; top: 34px !important;
+    right: 2.5rem !important; height: 64px !important;
+    z-index: 2000 !important; background: transparent !important;
+    display: flex !important; align-items: center !important;
+}
+.st-key-navhome div[data-testid="stHorizontalBlock"] .stButton > button {
+    width: auto !important; height: 38px !important;
+    padding: 0 20px !important; font-size: 13px !important;
+    font-weight: 700 !important;
+    background: #f1f5f9 !important; color: #374151 !important;
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 10px !important;
+    box-shadow: none !important; animation: none !important;
+    margin-top: 0 !important;
+}
+.st-key-navhome div[data-testid="stHorizontalBlock"] .stButton > button:hover {
+    background: #e2e8f0 !important; transform: translateY(-1px) !important;
+}
+
+/* All text dark */
+h1, h2, h3, h4, h5, h6,
+p, span, label, div, li,
+.stMarkdown, .stMarkdown *,
+div[data-testid="stMarkdownContainer"],
+div[data-testid="stMarkdownContainer"] * {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+}
+
+/* Selectbox labels */
+label[data-testid="stWidgetLabel"],
+label[data-testid="stWidgetLabel"] p,
+div[data-testid="stTextInput"] label,
+div[data-testid="stTextInput"] label p,
+.stSelectbox label, .stSelectbox label p {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    font-weight: 700 !important;
+    opacity: 1 !important;
+}
+
+/* Selectbox dropdown */
+div[data-baseweb="select"] > div {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 12px !important;
+}
+div[data-baseweb="select"] > div * {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+}
+div[role="option"] {
+    background: #ffffff !important;
+    color: #0f172a !important;
+}
+div[role="option"]:hover {
+    background: #f1f5f9 !important;
+}
+div[data-baseweb="popover"],
+div[data-baseweb="popover"] ul,
+div[data-baseweb="popover"] li,
+div[data-baseweb="menu"],
+ul[role="listbox"] {
+    background: #ffffff !important;
+}
+div[data-baseweb="popover"] li,
+ul[role="listbox"] li,
+div[role="option"] *,
+ul[role="listbox"] * {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    background: transparent !important;
+}
+ul[role="listbox"] li:hover,
+div[data-baseweb="popover"] li:hover {
+    background: #f1f5f9 !important;
+}
+
+/* Number input */
+input[type="number"] {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    border: 1.5px solid #cbd5e1 !important;
+    border-radius: 10px !important;
+    text-align: center;
+    font-size: 16px !important;
+}
+
+/* Welcome badge */
+.welcome-badge {
+    display: inline-block;
+    background: #dbeafe !important;
+    border: 2px solid #3b82f6 !important;
+    color: #111827 !important;
+    -webkit-text-fill-color: #111827 !important;
+    font-weight: 800 !important;
+    font-size: 15px !important;
+    border-radius: 50px !important;
+    padding: 8px 20px !important;
+    margin-bottom: 16px;
+}
+
+/* Main titles */
+.main-title {
+    text-align: center;
+    font-size: 46px;
+    font-weight: 800;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    margin-bottom: 6px;
+}
+.sub-title {
+    text-align: center;
+    color: #374151 !important;
+    -webkit-text-fill-color: #374151 !important;
+    font-size: 17px;
+    margin-bottom: 30px;
+}
+
+/* Section headers */
+.section-header {
+    font-size: 24px;
+    font-weight: 800;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    margin: 30px 0 16px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+/* Recommendation card */
+.rec-card {
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.75);
+    border-radius: 24px;
+    padding: 28px;
+    margin-bottom: 28px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.10);
+}
+.rec-card h2, .rec-card p, .rec-card span, .rec-card b {
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+}
+
+/* Rating block */
+.rating-block {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 20px 22px;
+    margin: 18px 0 14px 0;
+}
+.rating-label {
+    font-size: 13px;
+    color: #475569 !important;
+    -webkit-text-fill-color: #475569 !important;
+    margin-bottom: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.star-row { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
+.star { font-size: 24px; color: #cbd5e1 !important; -webkit-text-fill-color: #cbd5e1 !important; transition: color 0.3s; }
+.star.filled { color: #f59e0b !important; -webkit-text-fill-color: #f59e0b !important; }
+
+/* Buttons */
+.stButton > button {
+    background: #f1f5f9 !important;
+    color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    padding: 12px 20px !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    transition: all 0.25s ease !important;
+}
+.stButton > button:hover {
+    background: #e2e8f0 !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Get Recommendations main button */
+div[data-testid="stButton"]:not([data-testid="stHorizontalBlock"] div[data-testid="stButton"]) button[kind="primary"],
+.stButton > button[data-testid="baseButton-secondary"] {
+    background: linear-gradient(135deg, #2563eb, #6366f1) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border: none !important;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.30) !important;
+}
+
+/* Submit Rating form button */
+.stForm button,
+div[data-testid="stForm"] button {
+    background: linear-gradient(135deg, #2563eb, #6366f1) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    border: none !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 12px rgba(37,99,235,0.25) !important;
+}
+
+/* Google Maps button */
+.btn-maps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #2563eb, #6366f1) !important;
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+    border: none;
+    border-radius: 12px;
+    padding: 13px 0;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(37,99,235,0.25);
+}
+.btn-maps:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 22px rgba(37,99,235,0.40);
+    color: #ffffff !important;
+}
+
+/* Alerts */
+div[data-testid="stAlert"] {
+    border-radius: 14px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+}
+div[data-testid="stAlert"] * {
+    color: #0f172a !important;
+    font-weight: 700 !important;
+}
+
+/* Footer */
+.footer {
+    text-align: center;
+    font-size: 13px;
+    color: #64748b !important;
+    -webkit-text-fill-color: #64748b !important;
+    margin-top: 50px;
+    padding-bottom: 30px;
+    font-weight: 600;
+    letter-spacing: 2px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar       { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #e2e8f0; }
+::-webkit-scrollbar-thumb { background: #64748b; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #475569; }
 </style>
 """, unsafe_allow_html=True)
 
+# ── Ticker + Navbar ──────────────────────────────────────
+st.markdown("""
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">🌍 Tourist Place Recommendations</span>
+    <span class="ticker-item">✈️ Discover Amazing Destinations</span>
+    <span class="ticker-item">⭐ Rate Your Favourite Places</span>
+    <span class="ticker-item">❤️ Like & Save Places</span>
+    <span class="ticker-item">📍 Open in Google Maps</span>
+    <span class="ticker-item">🌍 Tourist Place Recommendations</span>
+    <span class="ticker-item">✈️ Discover Amazing Destinations</span>
+    <span class="ticker-item">⭐ Rate Your Favourite Places</span>
+    <span class="ticker-item">❤️ Like & Save Places</span>
+    <span class="ticker-item">📍 Open in Google Maps</span>
+  </div>
+</div>
+<div class="navbar-shell"></div>
+<div class="nav-brand">🌍 Smart Travel Planner</div>
+""", unsafe_allow_html=True)
+
+# ── Navbar home button ───────────────────────────────────
+with st.container(key="navhome"):
+    col1, col2, col3 = st.columns([10, 1, 1])
+    with col3:
+        if st.button("🏠 Home", key="nav_home"):
+            st.switch_page("welcome.py")
+
+st.markdown('<div class="page-spacer"></div>', unsafe_allow_html=True)
+
 # ---------------------------------------------------
-# Paths
+# Paths & DB
 # ---------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH  = os.path.join(BASE_DIR, "tourist.db")
 
-# ---------------------------------------------------
-# Database Initialization
-# ---------------------------------------------------
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
@@ -62,11 +441,7 @@ def init_db():
 
 init_db()
 
-# ---------------------------------------------------
-# DB Helper Functions
-# ---------------------------------------------------
 def get_user_id(username):
-    """Return the integer id for a given username, or None if not found."""
     try:
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
@@ -101,17 +476,11 @@ def save_like(username, place):
             return False, "User not found in database."
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
-        cursor.execute(
-            "SELECT id FROM likes WHERE user_id=? AND place=?",
-            (user_id, place)
-        )
+        cursor.execute("SELECT id FROM likes WHERE user_id=? AND place=?", (user_id, place))
         if cursor.fetchone():
             conn.close()
             return False, "already_liked"
-        cursor.execute(
-            "INSERT INTO likes (user_id, place) VALUES (?, ?)",
-            (user_id, place)
-        )
+        cursor.execute("INSERT INTO likes (user_id, place) VALUES (?, ?)", (user_id, place))
         conn.commit()
         conn.close()
         return True, None
@@ -119,263 +488,13 @@ def save_like(username, place):
         return False, str(e)
 
 # ---------------------------------------------------
-# Session State Check
+# Session check
 # ---------------------------------------------------
 if "username" not in st.session_state:
     st.warning("Please register from Home Page first.")
     st.stop()
 
 username = st.session_state["username"]
-
-# ---------------------------------------------------
-# Animated CSS
-# ---------------------------------------------------
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-
-* { font-family: 'Poppins', sans-serif; }
-
-.stApp {
-    background: linear-gradient(-45deg, #0f0c29, #302b63, #1a1a2e, #16213e, #0f3460);
-    background-size: 400% 400%;
-    animation: gradientShift 12s ease infinite;
-}
-@keyframes gradientShift {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-.stApp::before {
-    content: '';
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background-image:
-        radial-gradient(circle at 20% 20%, rgba(99,102,241,0.15) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(236,72,153,0.15) 0%, transparent 50%),
-        radial-gradient(circle at 50% 50%, rgba(6,182,212,0.08) 0%, transparent 60%);
-    pointer-events: none;
-    z-index: 0;
-}
-html, body, [class*="css"] { color: #e2e8f0; }
-
-.main-title {
-    text-align: center;
-    font-size: 52px;
-    font-weight: 700;
-    background: linear-gradient(135deg, #667eea, #f093fb, #4facfe, #00f2fe);
-    background-size: 300% 300%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: titleGradient 5s ease infinite, fadeSlideDown 0.8s ease both;
-    margin-bottom: 6px;
-}
-@keyframes titleGradient {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
-@keyframes fadeSlideDown {
-    from { opacity: 0; transform: translateY(-30px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-.sub-title {
-    text-align: center;
-    font-size: 17px;
-    color: #94a3b8;
-    margin-bottom: 40px;
-    animation: fadeSlideDown 0.8s ease 0.2s both;
-}
-section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #1e1b4b 0%, #312e81 50%, #1e1b4b 100%);
-    border-right: 1px solid rgba(99,102,241,0.3);
-}
-section[data-testid="stSidebar"] * { color: #c7d2fe !important; }
-section[data-testid="stSidebar"] .stSuccess {
-    background: rgba(99,102,241,0.2) !important;
-    border: 1px solid rgba(99,102,241,0.4) !important;
-    border-radius: 10px !important;
-}
-.stButton > button {
-    width: 100%;
-    background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2));
-    color: #e2e8f0 !important;
-    border: 1px solid rgba(99,102,241,0.5);
-    border-radius: 12px;
-    padding: 12px 20px;
-    font-size: 15px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    position: relative;
-    overflow: hidden;
-}
-.stButton > button::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -100%;
-    width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    transition: left 0.5s ease;
-}
-.stButton > button:hover::before { left: 100%; }
-.stButton > button:hover {
-    background: linear-gradient(135deg, rgba(99,102,241,0.5), rgba(168,85,247,0.5));
-    border-color: rgba(167,139,250,0.8);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(99,102,241,0.4);
-}
-div[data-baseweb="select"] > div {
-    background: rgba(30,27,75,0.8) !important;
-    color: #e2e8f0 !important;
-    border: 1px solid rgba(99,102,241,0.4) !important;
-    border-radius: 12px !important;
-    backdrop-filter: blur(10px);
-    transition: border-color 0.3s;
-}
-div[data-baseweb="select"] > div:hover {
-    border-color: rgba(167,139,250,0.8) !important;
-}
-div[role="option"] {
-    background: #1e1b4b !important;
-    color: #e2e8f0 !important;
-}
-div[role="option"]:hover {
-    background: rgba(99,102,241,0.3) !important;
-}
-input[type="number"] {
-    background: rgba(30,27,75,0.8) !important;
-    color: #ffffff !important;
-    border: 1.5px solid rgba(99,102,241,0.5) !important;
-    border-radius: 10px !important;
-    text-align: center;
-    font-size: 16px !important;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-input[type="number"]:focus {
-    border-color: #a78bfa !important;
-    box-shadow: 0 0 0 3px rgba(167,139,250,0.2) !important;
-}
-.rec-card {
-    background: rgba(15,12,41,0.7);
-    border: 1px solid rgba(99,102,241,0.25);
-    border-radius: 24px;
-    padding: 28px;
-    margin-bottom: 32px;
-    backdrop-filter: blur(20px);
-    animation: cardFadeIn 0.6s ease both;
-    box-shadow: 0 4px 30px rgba(0,0,0,0.3);
-    position: relative;
-    overflow: hidden;
-}
-.rec-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #667eea, #f093fb, #4facfe);
-    border-radius: 24px 24px 0 0;
-}
-@keyframes cardFadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-.rating-block {
-    background: rgba(30,27,75,0.6);
-    border: 1px solid rgba(99,102,241,0.3);
-    border-radius: 16px;
-    padding: 20px 22px;
-    margin: 18px 0 14px 0;
-    backdrop-filter: blur(10px);
-}
-.rating-label {
-    font-size: 13px;
-    color: #94a3b8;
-    margin-bottom: 12px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-.star-row { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; }
-.star { font-size: 24px; color: rgba(99,102,241,0.3); transition: color 0.3s, transform 0.2s; }
-.star.filled { color: #fbbf24; text-shadow: 0 0 10px rgba(251,191,36,0.5); animation: starPop 0.4s ease; }
-@keyframes starPop {
-    0%   { transform: scale(1); }
-    50%  { transform: scale(1.4); }
-    100% { transform: scale(1); }
-}
-.btn-maps {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    background: linear-gradient(135deg, rgba(6,182,212,0.2), rgba(59,130,246,0.2));
-    color: #67e8f9 !important;
-    border: 1px solid rgba(6,182,212,0.4);
-    border-radius: 12px;
-    padding: 13px 0;
-    font-size: 15px;
-    font-weight: 500;
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    width: 100%;
-    text-align: center;
-    backdrop-filter: blur(10px);
-}
-.btn-maps:hover {
-    background: linear-gradient(135deg, rgba(6,182,212,0.4), rgba(59,130,246,0.4));
-    border-color: rgba(103,232,249,0.7);
-    box-shadow: 0 4px 20px rgba(6,182,212,0.3);
-    transform: translateY(-2px);
-    color: #ffffff !important;
-}
-h1, h2, h3 { color: #e2e8f0 !important; }
-.welcome-badge {
-    display: inline-block;
-    background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.2));
-    border: 1px solid rgba(99,102,241,0.4);
-    border-radius: 50px;
-    padding: 6px 18px;
-    font-size: 14px;
-    color: #c4b5fd;
-    margin-bottom: 20px;
-    animation: fadeSlideDown 0.6s ease both;
-}
-.footer {
-    text-align: center;
-    font-size: 15px;
-    margin-top: 50px;
-    padding-bottom: 30px;
-    background: linear-gradient(135deg, #667eea, #f093fb, #4facfe);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    font-weight: 600;
-    letter-spacing: 2px;
-}
-div[data-testid="stAlert"] {
-    background: rgba(30,27,75,0.8) !important;
-    border-radius: 12px !important;
-    border: 1px solid rgba(99,102,241,0.3) !important;
-    backdrop-filter: blur(10px);
-}
-.section-header {
-    font-size: 26px;
-    font-weight: 600;
-    background: linear-gradient(135deg, #a78bfa, #67e8f9);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    margin: 30px 0 20px 0;
-}
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0f0c29; }
-::-webkit-scrollbar-thumb { background: linear-gradient(#667eea, #764ba2); border-radius: 3px; }
-</style>
-""", unsafe_allow_html=True)
 
 # ---------------------------------------------------
 # Load Model
@@ -385,7 +504,7 @@ with open(MODEL_PATH, "rb") as file:
     data, similarity = pickle.load(file)
 
 # ---------------------------------------------------
-# Recommendation Function
+# Recommendation & Crowd Functions
 # ---------------------------------------------------
 def recommend(place, budget, climate):
     index = data[data["Place"] == place].index[0]
@@ -400,9 +519,6 @@ def recommend(place, budget, climate):
             break
     return recommended_places
 
-# ---------------------------------------------------
-# Crowd Prediction
-# ---------------------------------------------------
 def predict_crowd(place, month, weekend, holiday):
     high_season = ["April","May","June","October","November","December"]
     score = 0
@@ -421,27 +537,33 @@ st.markdown(f'<div class="welcome-badge">👋 Welcome back, {username}</div>', u
 st.markdown('<div class="main-title">🌍 Tourist Place Recommendation</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-title">Discover Amazing Destinations Using Machine Learning ✈️</div>', unsafe_allow_html=True)
 
-# ---------------------------------------------------
-# Sidebar
-# ---------------------------------------------------
-st.sidebar.title("🌴 Popular Destinations")
-for p in ["Goa", "Kerala", "Manali", "Leh"]:
-    st.sidebar.success(p)
-st.sidebar.markdown("---")
-st.sidebar.info("Select your preferred destination, budget and climate to get recommendations.")
+# Hero Banner
+st.markdown("""
+<div style="max-width:1000px;margin:20px auto 35px auto;
+background:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1400&q=80') center/cover no-repeat;
+min-height:280px;border-radius:24px;display:flex;align-items:center;justify-content:center;position:relative;">
+    <div style="position:absolute;inset:0;background:rgba(255,255,255,0.22);border-radius:24px;"></div>
+    <div style="position:relative;text-align:center;">
+        <div style="font-size:64px;">🌍</div>
+        <h1 style="color:#111827;font-size:44px;font-weight:800;">Discover Your Next Adventure</h1>
+        <p style="color:#374151;font-size:17px;font-weight:600;">AI Powered Tourist Recommendations</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # ---------------------------------------------------
 # Input Section
 # ---------------------------------------------------
 st.markdown('<div class="section-header">🔍 Search Your Perfect Destination</div>', unsafe_allow_html=True)
 
+selected_place = st.selectbox("📍 Select Tourist Place", data["Place"].values)
+
 col1, col2 = st.columns(2)
 with col1:
-    selected_place = st.selectbox("📍 Select Tourist Place", data["Place"].values)
-with col2:
     budget = st.selectbox("💰 Select Budget", ["Low", "Medium", "High"])
+with col2:
+    climate = st.selectbox("🌤 Select Climate", ["Hot", "Cold", "Moderate"])
 
-climate = st.selectbox("🌤 Select Climate", ["Hot", "Cold", "Moderate"])
 month   = st.selectbox("📅 Travel Month", [
     "January","February","March","April","May","June",
     "July","August","September","October","November","December"
@@ -464,7 +586,6 @@ if "recommendations" in st.session_state:
 
     if len(st.session_state["recommendations"]) == 0:
         st.warning("No matching places found. Try a different budget or climate.")
-
     else:
         for place in st.session_state["recommendations"]:
 
@@ -483,50 +604,45 @@ if "recommendations" in st.session_state:
                     st.warning("Image not found.")
             with col2:
                 st.markdown(f"""
-                    <h2 style="
-                        background: linear-gradient(135deg, #a78bfa, #67e8f9);
-                        -webkit-background-clip: text;
-                        -webkit-text-fill-color: transparent;
-                        background-clip: text;
-                        font-size: 28px;
-                        font-weight: 700;
-                        margin-bottom: 14px;">
+                    <h2 style="color:#0f172a;-webkit-text-fill-color:#0f172a;font-size:28px;font-weight:800;margin-bottom:14px;">
                         📍 {place_name}
                     </h2>
-                    <p style="color:#cbd5e1; font-size:16px; line-height:2.4;">
-                        ⭐ <b style="color:#fbbf24;">Rating:</b> <span style="color:#fef3c7;">{place['Rating']}</span><br>
-                        🌤 <b style="color:#67e8f9;">Climate:</b> <span style="color:#e0f2fe;">{place['Climate']}</span><br>
-                        💰 <b style="color:#86efac;">Budget:</b> <span style="color:#dcfce7;">{place['Budget']}</span><br>
-                        👥 <b style="color:#c4b5fd;">Crowd:</b> <span style="color:#ede9fe;">{crowd_level}</span>
+                    <p style="color:#374151;font-size:16px;line-height:2.4;-webkit-text-fill-color:#374151;">
+                        ⭐ <b style="color:#0f172a;">Rating:</b> <span style="color:#374151;">{place['Rating']}</span><br>
+                        🌤 <b style="color:#0f172a;">Climate:</b> <span style="color:#374151;">{place['Climate']}</span><br>
+                        💰 <b style="color:#0f172a;">Budget:</b> <span style="color:#374151;">{place['Budget']}</span><br>
+                        👥 <b style="color:#0f172a;">Crowd:</b> <span style="color:#374151;">{crowd_level}</span>
                     </p>
                 """, unsafe_allow_html=True)
 
-            # ── Rating Block ──
+            # Rating Block
             st.markdown('<div class="rating-block">', unsafe_allow_html=True)
             st.markdown(f'<p class="rating-label">⭐ Rate {place_name}</p>', unsafe_allow_html=True)
 
             prev_val = st.session_state.get(f"prev_rating_{place_name}", 0)
+
+            rcol1, rcol2 = st.columns([1, 3])
+            with rcol1:
+                user_rating = st.number_input(
+                    "Rating",
+                    min_value=1, max_value=5, value=prev_val or 3, step=1,
+                    key=f"rating_{place_name}",
+                    label_visibility="collapsed"
+                )
+            with rcol2:
+                st.markdown(
+                    '<p style="color:#475569;font-size:14px;padding-top:8px;-webkit-text-fill-color:#475569;">out of 5</p>',
+                    unsafe_allow_html=True
+                )
+
             stars_html = "".join([
-                f'<span class="star {"filled" if i <= prev_val else ""}">★</span>'
+                f'<span class="star {"filled" if i <= user_rating else ""}">★</span>'
                 for i in range(1, 6)
             ])
             st.markdown(f'<div class="star-row">{stars_html}</div>', unsafe_allow_html=True)
 
             with st.form(key=f"form_{place_name}"):
-                rcol1, rcol2 = st.columns([1, 3])
-                with rcol1:
-                    user_rating = st.number_input(
-                        "Rating",
-                        min_value=1, max_value=5, value=3, step=1,
-                        key=f"rating_{place_name}",
-                        label_visibility="collapsed"
-                    )
-                with rcol2:
-                    st.markdown(
-                        '<p style="color:#94a3b8; font-size:14px; padding-top:8px;">out of 5</p>',
-                        unsafe_allow_html=True
-                    )
-                submit_rating = st.form_submit_button(f"☆  Submit Rating for {place_name}")
+                submit_rating = st.form_submit_button(f"⭐ Submit Rating for {place_name}")
 
             if submit_rating:
                 success, err = save_rating(username, place_name, int(user_rating))
@@ -538,7 +654,7 @@ if "recommendations" in st.session_state:
 
             st.markdown('</div>', unsafe_allow_html=True)  # close rating-block
 
-            # ── Like + Maps Row ──
+            # Like + Maps Row
             lcol, mcol = st.columns(2)
             with lcol:
                 if st.button(f"♡  Like {place_name}", key=f"like_{place_name}"):
@@ -552,7 +668,7 @@ if "recommendations" in st.session_state:
             with mcol:
                 st.markdown(f"""
                     <a href="{map_url}" target="_blank" class="btn-maps">
-                        ⊙&nbsp; Open in Google Maps
+                        📍&nbsp; Open in Google Maps
                     </a>
                 """, unsafe_allow_html=True)
 

@@ -1,324 +1,384 @@
 import streamlit as st
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from styles import apply_styles
 
-st.set_page_config(page_title="...", page_icon="🌍", layout="centered")
-apply_styles()   # ← one line does everything
+# ---------------------------------------------------
+# Page Configuration
+# ---------------------------------------------------
 st.set_page_config(
-    page_title="Admin Login",
+    page_title="Admin Login · Smart Travel Planner",
     page_icon="🔐",
     layout="centered"
 )
+
+# ---------------------------------------------------
+# CSS — same theme as login.py
+# ---------------------------------------------------
 st.markdown("""
 <style>
-[data-testid="stSidebar"]        { display: none !important; }
-[data-testid="collapsedControl"] { display: none !important; }
-</style>
-""", unsafe_allow_html=True)
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 
+* { font-family: 'Poppins', sans-serif; font-weight: 700; box-sizing: border-box; margin: 0; padding: 0; }
 
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap');
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body, [data-testid="stAppViewContainer"] {
-    background: #0a0f1e !important;
-    font-family: 'DM Sans', sans-serif;
-    overflow-x: hidden;
+/* Hide Streamlit chrome */
+header, [data-testid="stHeader"], [data-testid="stToolbar"],
+[data-testid="stDecoration"], #MainMenu, footer,
+[data-testid="stSidebar"], [data-testid="collapsedControl"] {
+    display: none !important;
 }
+.block-container { padding-top: 0 !important; max-width: 100% !important; }
 
-/* ── Background glows — violet/indigo tones for admin ── */
-[data-testid="stAppViewContainer"]::before {
+/* ── Home.py style background ── */
+html, body, .stApp {
+    background: #f0f4fa !important;
+}
+.stApp::before {
     content: '';
-    position: fixed;
-    inset: 0;
-    background:
-        radial-gradient(ellipse 70% 50% at 70%  0%,  rgba(99,102,241,0.20) 0%, transparent 65%),
-        radial-gradient(ellipse 55% 40% at 20% 100%, rgba(168,85,247,0.14) 0%, transparent 65%),
-        radial-gradient(ellipse 45% 35% at 95%  60%, rgba(56,189,248,0.09) 0%, transparent 60%);
-    animation: bgPulse 9s ease-in-out infinite alternate;
-    pointer-events: none;
-    z-index: 0;
+    position: fixed; inset: 0; z-index: 0;
+    background: transparent;
+}
+.stApp::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background: transparent;
+}
+/* Make sure all content sits above the background layers */
+.stApp > * { position: relative; z-index: 2; }
+
+/* ── Ticker bar ── */
+.ticker-wrap {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 2000;
+    background: #1a1410;
+    height: 34px; display: flex; align-items: center; overflow: hidden;
+}
+.ticker-track {
+    display: flex; white-space: nowrap;
+    animation: tickerScroll 30s linear infinite;
+}
+.ticker-item {
+    padding: 0 2rem; color: #c9a96e;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.8px;
+}
+@keyframes tickerScroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
-@keyframes bgPulse {
-    0%   { opacity: 0.65; transform: scale(1); }
-    100% { opacity: 1;    transform: scale(1.05); }
+/* ── Navbar ── */
+.navbar-shell {
+    position: fixed; top: 34px; left: 0; right: 0; height: 64px; z-index: 1500;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+}
+.nav-brand {
+    position: fixed; top: 34px; left: 2.5rem; height: 64px;
+    display: flex; align-items: center; z-index: 1600;
+    font-weight: 800; font-size: 18px; color: #1a1814;
+    letter-spacing: -0.3px;
 }
 
-/* Drifting star strip */
-[data-testid="stAppViewContainer"]::after {
-    content: '✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦';
-    position: fixed;
-    top: 6%;
-    left: 0; right: 0;
-    text-align: center;
-    font-size: 0.62rem;
-    letter-spacing: 2.8rem;
-    color: rgba(148,163,184,0.18);
-    animation: drift 14s linear infinite;
-    pointer-events: none;
-    z-index: 0;
+/* Spacer under fixed bars */
+.page-spacer { height: 114px; }
+
+/* Navbar back button */
+div[data-testid="stHorizontalBlock"] {
+    position: fixed !important; top: 34px !important;
+    right: 2.5rem !important; height: 64px !important;
+    z-index: 2000 !important; background: transparent !important;
+    display: flex !important; align-items: center !important;
+}
+div[data-testid="stHorizontalBlock"] .stButton > button {
+    width: auto !important; height: 38px !important;
+    padding: 0 20px !important; font-size: 13px !important;
+    font-weight: 700 !important;
+    background: #f1f5f9 !important; color: #374151 !important;
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 10px !important;
+    box-shadow: none !important; animation: none !important;
+    margin-top: 0 !important;
+}
+div[data-testid="stHorizontalBlock"] .stButton > button:hover {
+    background: #e2e8f0 !important; transform: translateY(-1px) !important;
 }
 
-@keyframes drift {
-    0%   { transform: translateX(-40px); opacity: 0.2; }
-    50%  { opacity: 0.45; }
-    100% { transform: translateX(40px);  opacity: 0.2; }
+/* ── Page outer layout ── */
+.login-outer {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: calc(100vh - 114px);
+    padding: 32px 16px 48px;
 }
 
-[data-testid="stVerticalBlock"] { position: relative; z-index: 1; }
+/* ── Hero badge ── */
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(59,130,246,0.10);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 12px; font-weight: 700;
+    color: #3b82f6; letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+.login-hero{
+    margin:0 auto 30px;
+    max-width:900px;
+    min-height:280px;
+    border-radius:20px;
+    overflow:hidden;
+    background:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1400&q=80') center/cover no-repeat;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    position:relative;
+}
+.login-hero::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:rgba(255,255,255,0.18);
+}
+.hero-content{
+    position:relative;
+    z-index:2;
+}
+.hero-content h1{
+    font-size:42px;
+    font-weight:800;
+    color:#1a1814;
+}
+.hero-content p{
+    color:#374151;
+    font-size:15px;
+}
 
 /* ── Card ── */
-.admin-card {
-    background: rgba(15, 23, 42, 0.86);
-    border: 1px solid rgba(99,102,241,0.18);
-    border-radius: 24px;
-    padding: 2.8rem 2.4rem 2.4rem;
-    margin: 1.5rem auto;
-    max-width: 480px;
-    box-shadow:
-        0 0 0 1px rgba(99,102,241,0.07),
-        0 30px 70px rgba(0,0,0,0.55),
-        inset 0 1px 0 rgba(255,255,255,0.05);
-    backdrop-filter: blur(22px);
-    animation: cardEntry 0.85s cubic-bezier(0.16,1,0.3,1) both;
+.login-card {
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 1px solid rgba(255,255,255,0.75);
+    border-radius: 28px;
+    padding: 44px 40px 36px;
+    width: 100%; max-width: 500px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.15);
+    animation: cardEntry 0.65s cubic-bezier(0.16,1,0.3,1) both;
 }
-
 @keyframes cardEntry {
-    from { opacity: 0; transform: translateY(44px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0)    scale(1); }
+    from { opacity: 0; transform: translateY(36px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ── Shield / lock icon ── */
-.shield-wrap {
-    text-align: center;
-    margin-bottom: 1rem;
-    animation: shieldDrop 0.75s cubic-bezier(0.34,1.56,0.64,1) 0.25s both;
+/* ── Globe icon ── */
+.globe-wrap {
+    text-align: center; margin-bottom: 14px;
 }
-
-@keyframes shieldDrop {
-    from { opacity: 0; transform: translateY(-30px) scale(0.4); }
-    to   { opacity: 1; transform: translateY(0)      scale(1); }
+.globe-icon {
+    font-size: 64px; display: inline-block;
+    filter: drop-shadow(0 4px 12px rgba(59,130,246,0.3));
+    animation: globeFloat 4s ease-in-out infinite;
 }
-
-.shield-icon {
-    font-size: 3.4rem;
-    display: inline-block;
-    filter: drop-shadow(0 0 18px rgba(99,102,241,0.65));
-    animation: shieldPulse 4s ease-in-out infinite;
-}
-
-@keyframes shieldPulse {
-    0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 18px rgba(99,102,241,0.65)); }
-    50%       { transform: scale(1.07); filter: drop-shadow(0 0 28px rgba(168,85,247,0.75)); }
+@keyframes globeFloat {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%       { transform: translateY(-10px) rotate(3deg); }
 }
 
 /* ── Title ── */
-.admin-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.7rem, 3.5vw, 2.2rem);
-    font-weight: 900;
-    text-align: center;
-    background: linear-gradient(135deg, #e0e7ff 0%, #a5b4fc 45%, #c084fc 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: titleReveal 0.8s ease 0.4s both;
+.login-title {
+    font-size: 38px; font-weight: 900;
+    color: #0f172a; text-align: center;
+    margin-bottom: 6px; line-height: 1.1;
+    letter-spacing: -1px;
 }
-
-@keyframes titleReveal {
-    from { opacity: 0; transform: translateY(14px); letter-spacing: 0.25em; }
-    to   { opacity: 1; transform: translateY(0);    letter-spacing: normal; }
-}
-
-.admin-subtitle {
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #a5b4fc;
-    text-align: center;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    margin-top: 0.35rem;
-    animation: fadeUp 0.8s ease 0.55s both;
-}
-
-/* ── Access badge ── */
-.access-badge {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    background: rgba(99,102,241,0.1);
-    border: 1px solid rgba(99,102,241,0.25);
-    border-radius: 100px;
-    padding: 0.35rem 1.1rem;
-    width: fit-content;
-    margin: 1rem auto 0;
-    font-size: 0.75rem;
-    font-weight: 500;
-    color: #a5b4fc;
-    letter-spacing: 0.1em;
-    animation: fadeUp 0.8s ease 0.65s both;
-}
-
-.badge-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #a5b4fc;
-    box-shadow: 0 0 6px rgba(165,180,252,0.8);
-    animation: dotBlink 2s ease-in-out infinite;
-}
-
-@keyframes dotBlink {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50%       { opacity: 0.4; transform: scale(0.7); }
-}
-
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+.login-title .highlight { color: #3b82f6; }
+.login-subtitle {
+    font-size: 15px; font-weight: 500;
+    color: #64748b;
+    text-align: center; margin-bottom: 28px;
+    letter-spacing: 0.01em;
 }
 
 /* ── Divider ── */
 .divider {
-    border: none;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.35), transparent);
-    margin: 1.6rem 0 1.8rem;
-    animation: fadeUp 0.8s ease 0.72s both;
+    border: none; height: 1px;
+    background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+    margin: 0 0 28px;
+}
+
+/* ── Stats strip ── */
+.stats-strip {
+    display: flex; justify-content: center; gap: 24px;
+    margin-bottom: 28px;
+}
+.stat-pill {
+    display: flex; flex-direction: column; align-items: center;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 14px; padding: 10px 20px;
+    min-width: 100px;
+}
+.stat-num {
+    font-size: 20px; font-weight: 900;
+    color: #3b82f6; line-height: 1;
+}
+.stat-lbl {
+    font-size: 10px; font-weight: 700;
+    color: #94a3b8; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-top: 3px;
 }
 
 /* ── Input labels ── */
-.stTextInput label {
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 0.78rem !important;
-    font-weight: 500 !important;
-    color: rgba(148,163,184,0.7) !important;
-    letter-spacing: 0.12em !important;
+label, .stTextInput label {
+    color: #1e293b !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
     text-transform: uppercase !important;
-    margin-bottom: 0.3rem !important;
 }
 
 /* ── Input fields ── */
-.stTextInput input {
-    background: rgba(30,41,59,0.75) !important;
-    border: 1px solid rgba(99,102,241,0.2) !important;
-    border-radius: 12px !important;
-    color: #e2e8f0 !important;
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 0.95rem !important;
-    padding: 0.7rem 1rem !important;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease !important;
-    caret-color: #a5b4fc !important;
+input[type="text"], input[type="password"] {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
 }
-
-.stTextInput input:focus {
-    border-color: rgba(99,102,241,0.65) !important;
-    box-shadow: 0 0 0 3px rgba(99,102,241,0.13), 0 4px 16px rgba(99,102,241,0.12) !important;
-    background: rgba(30,41,59,0.95) !important;
+input[type="text"]:focus, input[type="password"]:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.12) !important;
     outline: none !important;
+    background: #ffffff !important;
 }
-
-.stTextInput input::placeholder { color: rgba(100,116,139,0.45) !important; }
-
-div[data-testid="stTextInput"]:nth-of-type(1) { animation: fadeUp 0.8s ease 0.78s both; }
-div[data-testid="stTextInput"]:nth-of-type(2) { animation: fadeUp 0.8s ease 0.9s  both; }
+input::placeholder { color: #94a3b8 !important; font-weight: 400 !important; }
 
 /* ── Submit button ── */
 div.stFormSubmitButton > button {
     width: 100% !important;
-    padding: 0.88rem !important;
-    border-radius: 14px !important;
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 0.94rem !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.07em !important;
-    text-transform: uppercase !important;
-    background: linear-gradient(135deg, rgba(99,102,241,0.3), rgba(79,70,229,0.18)) !important;
-    border: 1px solid rgba(99,102,241,0.48) !important;
-    color: #a5b4fc !important;
+    background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%) !important;
+    color: #ffffff !important; border: none !important;
+    border-radius: 16px !important; padding: 16px 24px !important;
+    font-size: 16px !important; font-weight: 800 !important;
     cursor: pointer !important;
-    position: relative !important;
-    overflow: hidden !important;
-    box-shadow: 0 4px 20px rgba(99,102,241,0.18) !important;
-    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1) !important;
-    animation: fadeUp 0.8s ease 1.02s both;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 6px 24px rgba(37,99,235,0.40) !important;
+    margin-top: 10px !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
 }
-
-div.stFormSubmitButton > button::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -100%; width: 60%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    transition: left 0.55s ease;
-}
-
 div.stFormSubmitButton > button:hover {
-    background: linear-gradient(135deg, rgba(99,102,241,0.48), rgba(79,70,229,0.3)) !important;
-    border-color: rgba(99,102,241,0.75) !important;
-    color: #e0e7ff !important;
-    transform: translateY(-3px) scale(1.02) !important;
-    box-shadow: 0 8px 30px rgba(99,102,241,0.32) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 32px rgba(37,99,235,0.50) !important;
 }
+div.stFormSubmitButton > button:active { transform: translateY(0) !important; }
 
-div.stFormSubmitButton > button:hover::before { left: 160%; }
-div.stFormSubmitButton > button:active { transform: translateY(-1px) scale(0.99) !important; }
+/* ── Back button ── */
+.stButton > button {
+    width: 100% !important;
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 16px !important; padding: 13px 24px !important;
+    font-size: 14px !important; font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+    box-shadow: none !important; margin-top: 8px !important;
+    letter-spacing: 0.02em !important;
+}
+.stButton > button:hover {
+    background: #e2e8f0 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
+}
 
 /* ── Alerts ── */
-[data-testid="stAlert"] {
-    border-radius: 12px !important;
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 0.9rem !important;
-    animation: fadeUp 0.5s ease both;
+div[data-testid="stAlert"] {
+    border-radius: 14px !important; font-size: 14px !important;
+    font-weight: 600 !important;
+    animation: fadeUp 0.4s ease both;
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Divider text ── */
+.or-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0 4px; color: #94a3b8;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+}
+.or-divider::before, .or-divider::after {
+    content: ''; flex: 1; height: 1px; background: #e2e8f0;
 }
 
 /* ── Footer ── */
 .footer-text {
-    text-align: center;
-    font-size: 0.72rem;
-    color: rgba(100,116,139,0.4);
-    margin-top: 1.6rem;
-    letter-spacing: 0.06em;
-    animation: fadeUp 0.8s ease 1.15s both;
+    text-align: center; font-size: 12px;
+    color: #94a3b8; margin-top: 24px;
+    font-weight: 500; letter-spacing: 0.04em;
 }
 
-/* Hide Streamlit chrome */
-#MainMenu, footer, header,
-[data-testid="stToolbar"],
-[data-testid="stDecoration"] { display: none !important; }
-
-.block-container {
-    padding-top: 3.5rem !important;
-    padding-bottom: 2rem !important;
-}
+/* Scrollbar */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Hero ──────────────────────────────────────────────────
-st.markdown('<div class="shield-wrap"><span class="shield-icon">🔐</span></div>', unsafe_allow_html=True)
-st.markdown('<h1 class="admin-title">Admin Portal</h1>', unsafe_allow_html=True)
-st.markdown('<p class="admin-subtitle">Restricted Access</p>', unsafe_allow_html=True)
+# ── Ticker + Navbar ──────────────────────────────────────
 st.markdown("""
-<div class="access-badge">
-    <span class="badge-dot"></span>
-    Authorised Personnel Only
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">🔐 Restricted Access</span>
+    <span class="ticker-item">🛡️ Admin Console</span>
+    <span class="ticker-item">⚙️ System Control</span>
+    <span class="ticker-item">📊 Manage Platform</span>
+    <span class="ticker-item">⭐ 4.9 Rating</span>
+    <span class="ticker-item">🔐 Restricted Access</span>
+    <span class="ticker-item">🛡️ Admin Console</span>
+    <span class="ticker-item">⚙️ System Control</span>
+    <span class="ticker-item">📊 Manage Platform</span>
+    <span class="ticker-item">⭐ 4.9 Rating</span>
+  </div>
+</div>
+<div class="navbar-shell"></div>
+<div class="nav-brand">🌍 Smart Travel Planner</div>
+""", unsafe_allow_html=True)
+
+# ── Navbar back button ───────────────────────────────────
+col1, col2, col3 = st.columns([10, 1, 1])
+with col3:
+    if st.button("🏠 Home", key="nav_home"):
+        st.switch_page("welcome.py")
+
+st.markdown('<div class="page-spacer"></div>', unsafe_allow_html=True)
+
+st.markdown("""
+<div class="login-hero">
+    <div class="hero-content">
+        <div style="font-size:70px;">🔐</div>
+        <h1>Admin Portal</h1>
+        <p>Restricted access · Authorised personnel only</p>
+    </div>
 </div>
 """, unsafe_allow_html=True)
-st.markdown('<hr class="divider">', unsafe_allow_html=True)
 
 # ── Admin Credentials ─────────────────────────────────────
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "admin123"
 
-# ── Form ──────────────────────────────────────────────────
+# ── Admin Login Form ──────────────────────────────────────
 with st.form("admin_login_form"):
-    username = st.text_input("🛡️  Admin Username", placeholder="Enter admin username")
-    password = st.text_input("🔒  Admin Password", placeholder="Enter admin password", type="password")
-    st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
+    username  = st.text_input("🛡️  Admin Username", placeholder="Enter admin username")
+    password  = st.text_input("🔒  Admin Password", placeholder="Enter admin password", type="password")
+    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
     login_btn = st.form_submit_button("🔓  Access Dashboard")
 
 if login_btn:
@@ -328,72 +388,10 @@ if login_btn:
         st.switch_page("pages/admin.py")
     else:
         st.error("❌ Invalid admin credentials. Access denied.")
-        st.markdown('</div>', unsafe_allow_html=True)
-# Back button
-if st.button("← Back to Home"):
-    st.switch_page("welcome.py")
-
-st.markdown('<p class="footer-text">© 2025 Smart Travel Planner · Admin Console</p>', unsafe_allow_html=True)
 
 
-# ===== WELCOME.PY LUXURY THEME OVERRIDE =====
+
+# ── Footer ────────────────────────────────────────────────
 st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=Inter:wght@300;400;500;600&display=swap');
-
-html,body,[data-testid="stAppViewContainer"]{
-    background:#fafaf8 !important;
-    color:#1a1814 !important;
-    font-family:'Inter',sans-serif !important;
-}
-
-.admin-card{
-    background:#ffffff !important;
-    border:1px solid rgba(201,169,110,.20) !important;
-}
-
-.admin-title{
-    font-family:'Cormorant Garamond',serif !important;
-    background:none !important;
-    -webkit-text-fill-color:#1a1814 !important;
-    color:#1a1814 !important;
-}
-
-.admin-subtitle,.footer-text,.access-badge{
-    color:#6b5a3e !important;
-}
-
-.stTextInput label{
-    color:#6b5a3e !important;
-}
-
-.stTextInput input{
-    background:#fff !important;
-    color:#1a1814 !important;
-    border:1.5px solid rgba(201,169,110,.30) !important;
-    border-radius:12px !important;
-}
-
-.stTextInput input:focus{
-    border-color:#c9a96e !important;
-    box-shadow:0 0 0 4px rgba(201,169,110,.12) !important;
-}
-
-div.stFormSubmitButton > button,
-.stButton > button{
-    background:linear-gradient(135deg,#c9a96e,#a87828) !important;
-    color:white !important;
-    border:none !important;
-}
-
-[data-testid="stAppViewContainer"]::before{
-    background:
-      radial-gradient(ellipse 70% 50% at 70% 0%,rgba(201,169,110,.15) 0%,transparent 65%),
-      radial-gradient(ellipse 55% 40% at 20% 100%,rgba(201,169,110,.08) 0%,transparent 65%) !important;
-}
-
-.shield-icon{
-    filter:none !important;
-}
-</style>
+<p class="footer-text">© 2025 Smart Travel Planner · Admin Console</p>
 """, unsafe_allow_html=True)

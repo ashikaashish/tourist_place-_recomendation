@@ -1,318 +1,398 @@
 import streamlit as st
 import sqlite3
 import os
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from styles import apply_styles
 
-st.set_page_config(page_title="...", page_icon="🌍", layout="centered")
-apply_styles()   # ← one line does everything
+# ---------------------------------------------------
+# Page Configuration
+# ---------------------------------------------------
 st.set_page_config(
-    page_title="User Login",
-    page_icon="🔑",
+    page_title="Sign In · Smart Travel Planner",
+    page_icon="🌍",
     layout="centered"
 )
+
+# ---------------------------------------------------
+# CSS — Bold visual style matching home.py screenshot
+# ---------------------------------------------------
 st.markdown("""
 <style>
-[data-testid="stSidebar"]        { display: none !important; }
-[data-testid="collapsedControl"] { display: none !important; }
-</style>
-""", unsafe_allow_html=True)
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DB_PATH = os.path.join(BASE_DIR, "tourist.db")
+* { font-family: 'Poppins', sans-serif; font-weight: 700; box-sizing: border-box; margin: 0; padding: 0; }
 
-st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
-
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body, [data-testid="stAppViewContainer"] {
-    background: #0a0f1e !important;
-    font-family: 'DM Sans', sans-serif;
-    overflow-x: hidden;
+/* Hide Streamlit chrome */
+header, [data-testid="stHeader"], [data-testid="stToolbar"],
+[data-testid="stDecoration"], #MainMenu, footer,
+[data-testid="stSidebar"], [data-testid="collapsedControl"] {
+    display: none !important;
 }
+.block-container { padding-top: 0 !important; max-width: 100% !important; }
 
-/* ── Animated background glow ── */
-[data-testid="stAppViewContainer"]::before {
+/* ── Home.py style background ── */
+html, body, .stApp {
+    background: #f0f4fa !important;
+}
+.stApp::before {
     content: '';
-    position: fixed;
-    inset: 0;
-    background:
-        radial-gradient(ellipse 70% 50% at 30% 0%,   rgba(56,189,248,0.16) 0%, transparent 65%),
-        radial-gradient(ellipse 55% 40% at 80% 100%, rgba(99,102,241,0.13) 0%, transparent 65%),
-        radial-gradient(ellipse 45% 35% at 5%  70%,  rgba(16,185,129,0.09) 0%, transparent 60%);
-    animation: bgPulse 9s ease-in-out infinite alternate;
-    pointer-events: none;
-    z-index: 0;
+    position: fixed; inset: 0; z-index: 0;
+    background: transparent;
+}
+.stApp::after {
+    content: '';
+    position: fixed; inset: 0; z-index: 1;
+    background: transparent;
+}
+/* Make sure all content sits above the background layers */
+.stApp > * { position: relative; z-index: 2; }
+
+/* ── Ticker bar ── */
+.ticker-wrap {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 2000;
+    background: #1a1410;
+    height: 34px; display: flex; align-items: center; overflow: hidden;
+}
+.ticker-track {
+    display: flex; white-space: nowrap;
+    animation: tickerScroll 30s linear infinite;
+}
+.ticker-item {
+    padding: 0 2rem; color: #c9a96e;
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.8px;
+}
+@keyframes tickerScroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
 }
 
-@keyframes bgPulse {
-    0%   { opacity: 0.6; transform: scale(1); }
-    100% { opacity: 1;   transform: scale(1.05); }
+/* ── Navbar ── */
+.navbar-shell {
+    position: fixed; top: 34px; left: 0; right: 0; height: 64px; z-index: 1500;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(24px);
+    border-bottom: 1px solid rgba(255,255,255,0.6);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+}
+.nav-brand {
+    position: fixed; top: 34px; left: 2.5rem; height: 64px;
+    display: flex; align-items: center; z-index: 1600;
+    font-weight: 800; font-size: 18px; color: #1a1814;
+    letter-spacing: -0.3px;
 }
 
-/* Drifting star strip */
-[data-testid="stAppViewContainer"]::after {
-    content: '✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦ ✧ ✦';
-    position: fixed;
-    top: 6%;
-    left: 0; right: 0;
-    text-align: center;
-    font-size: 0.62rem;
-    letter-spacing: 2.8rem;
-    color: rgba(148,163,184,0.2);
-    animation: drift 14s linear infinite;
-    pointer-events: none;
-    z-index: 0;
+/* Spacer under fixed bars */
+.page-spacer { height: 114px; }
+
+/* Navbar back button */
+div[data-testid="stHorizontalBlock"] {
+    position: fixed !important; top: 34px !important;
+    right: 2.5rem !important; height: 64px !important;
+    z-index: 2000 !important; background: transparent !important;
+    display: flex !important; align-items: center !important;
+}
+div[data-testid="stHorizontalBlock"] .stButton > button {
+    width: auto !important; height: 38px !important;
+    padding: 0 20px !important; font-size: 13px !important;
+    font-weight: 700 !important;
+    background: #f1f5f9 !important; color: #374151 !important;
+    border: 1.5px solid #d1d5db !important;
+    border-radius: 10px !important;
+    box-shadow: none !important; animation: none !important;
+    margin-top: 0 !important;
+}
+div[data-testid="stHorizontalBlock"] .stButton > button:hover {
+    background: #e2e8f0 !important; transform: translateY(-1px) !important;
 }
 
-@keyframes drift {
-    0%   { transform: translateX(-40px); opacity: 0.25; }
-    50%  { opacity: 0.5; }
-    100% { transform: translateX(40px);  opacity: 0.25; }
+/* ── Page outer layout ── */
+.login-outer {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    min-height: calc(100vh - 114px);
+    padding: 32px 16px 48px;
 }
 
-[data-testid="stVerticalBlock"] { position: relative; z-index: 1; }
+/* ── Hero badge ── */
+.hero-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(59,130,246,0.10);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-size: 12px; font-weight: 700;
+    color: #3b82f6; letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+}
+
+
+.login-hero{
+    margin:0 auto 30px;
+    max-width:900px;
+    min-height:280px;
+    border-radius:20px;
+    overflow:hidden;
+    background:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1400&q=80') center/cover no-repeat;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    position:relative;
+}
+.login-hero::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:rgba(255,255,255,0.18);
+}
+.hero-content{
+    position:relative;
+    z-index:2;
+}
+.hero-content h1{
+    font-size:42px;
+    font-weight:800;
+    color:#1a1814;
+}
+.hero-content p{
+    color:#374151;
+    font-size:15px;
+}
 
 /* ── Card ── */
 .login-card {
-    background: rgba(15, 23, 42, 0.84);
-    border: 1px solid rgba(148,163,184,0.11);
-    border-radius: 24px;
-    padding: 2.8rem 2.4rem 2.4rem;
-    margin: 1.5rem auto;
-    max-width: 480px;
-    box-shadow:
-        0 0 0 1px rgba(56,189,248,0.05),
-        0 30px 70px rgba(0,0,0,0.55),
-        inset 0 1px 0 rgba(255,255,255,0.05);
-    backdrop-filter: blur(22px);
-    animation: cardEntry 0.85s cubic-bezier(0.16,1,0.3,1) both;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(28px) saturate(1.4);
+    -webkit-backdrop-filter: blur(28px) saturate(1.4);
+    border: 1px solid rgba(255,255,255,0.75);
+    border-radius: 28px;
+    padding: 44px 40px 36px;
+    width: 100%; max-width: 500px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.35), 0 4px 16px rgba(0,0,0,0.15);
+    animation: cardEntry 0.65s cubic-bezier(0.16,1,0.3,1) both;
 }
-
 @keyframes cardEntry {
-    from { opacity: 0; transform: translateY(44px) scale(0.97); }
-    to   { opacity: 1; transform: translateY(0)    scale(1); }
+    from { opacity: 0; transform: translateY(36px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ── Key icon ── */
-.key-wrap {
-    text-align: center;
-    margin-bottom: 1rem;
-    animation: keyDrop 0.7s cubic-bezier(0.34,1.56,0.64,1) 0.25s both;
+/* ── Globe icon ── */
+.globe-wrap {
+    text-align: center; margin-bottom: 14px;
 }
-
-@keyframes keyDrop {
-    from { opacity: 0; transform: translateY(-28px) rotate(-20deg) scale(0.5); }
-    to   { opacity: 1; transform: translateY(0)      rotate(0deg)   scale(1); }
+.globe-icon {
+    font-size: 64px; display: inline-block;
+    filter: drop-shadow(0 4px 12px rgba(59,130,246,0.3));
+    animation: globeFloat 4s ease-in-out infinite;
 }
-
-.key-icon {
-    font-size: 3.4rem;
-    display: inline-block;
-    filter: drop-shadow(0 0 16px rgba(56,189,248,0.5));
-    animation: keyFloat 5s ease-in-out infinite;
-}
-
-@keyframes keyFloat {
-    0%, 100% { transform: translateY(0px)   rotate(0deg); }
-    50%       { transform: translateY(-8px)  rotate(6deg); }
+@keyframes globeFloat {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50%       { transform: translateY(-10px) rotate(3deg); }
 }
 
 /* ── Title ── */
 .login-title {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(1.7rem, 3.5vw, 2.2rem);
-    font-weight: 900;
-    text-align: center;
-    background: linear-gradient(135deg, #e0f2fe 0%, #38bdf8 50%, #818cf8 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: titleReveal 0.8s ease 0.4s both;
+    font-size: 38px; font-weight: 900;
+    color: #0f172a; text-align: center;
+    margin-bottom: 6px; line-height: 1.1;
+    letter-spacing: -1px;
 }
-
-@keyframes titleReveal {
-    from { opacity: 0; transform: translateY(14px); letter-spacing: 0.25em; }
-    to   { opacity: 1; transform: translateY(0);    letter-spacing: normal; }
-}
-
+.login-title .highlight { color: #3b82f6; }
 .login-subtitle {
-    font-size: 0.82rem;
-    font-weight: 500;
-    color: #38bdf8;
-    text-align: center;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-top: 0.3rem;
-    animation: fadeUp 0.8s ease 0.55s both;
-}
-
-@keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to   { opacity: 1; transform: translateY(0); }
+    font-size: 15px; font-weight: 500;
+    color: #64748b;
+    text-align: center; margin-bottom: 28px;
+    letter-spacing: 0.01em;
 }
 
 /* ── Divider ── */
 .divider {
-    border: none;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(56,189,248,0.3), transparent);
-    margin: 1.6rem 0 1.8rem;
-    animation: fadeUp 0.8s ease 0.65s both;
+    border: none; height: 1px;
+    background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+    margin: 0 0 28px;
+}
+
+/* ── Stats strip ── */
+.stats-strip {
+    display: flex; justify-content: center; gap: 24px;
+    margin-bottom: 28px;
+}
+.stat-pill {
+    display: flex; flex-direction: column; align-items: center;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 14px; padding: 10px 20px;
+    min-width: 100px;
+}
+.stat-num {
+    font-size: 20px; font-weight: 900;
+    color: #3b82f6; line-height: 1;
+}
+.stat-lbl {
+    font-size: 10px; font-weight: 700;
+    color: #94a3b8; text-transform: uppercase;
+    letter-spacing: 0.06em; margin-top: 3px;
 }
 
 /* ── Input labels ── */
-.stTextInput label {
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 0.8rem !important;
-    font-weight: 500 !important;
-    color: rgba(148,163,184,0.75) !important;
-    letter-spacing: 0.1em !important;
+label, .stTextInput label {
+    color: #1e293b !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.02em !important;
     text-transform: uppercase !important;
-    margin-bottom: 0.3rem !important;
 }
 
 /* ── Input fields ── */
-.stTextInput input {
-    background: rgba(30,41,59,0.75) !important;
-    border: 1px solid rgba(56,189,248,0.18) !important;
-    border-radius: 12px !important;
-    color: #e2e8f0 !important;
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 0.95rem !important;
-    padding: 0.7rem 1rem !important;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease !important;
-    caret-color: #38bdf8 !important;
+input[type="text"], input[type="password"] {
+    background: #f8fafc !important;
+    color: #0f172a !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 14px !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    transition: border-color 0.2s, box-shadow 0.2s !important;
 }
-
-.stTextInput input:focus {
-    border-color: rgba(56,189,248,0.6) !important;
-    box-shadow: 0 0 0 3px rgba(56,189,248,0.12), 0 4px 16px rgba(56,189,248,0.1) !important;
-    background: rgba(30,41,59,0.95) !important;
+input[type="text"]:focus, input[type="password"]:focus {
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 4px rgba(59,130,246,0.12) !important;
     outline: none !important;
+    background: #ffffff !important;
 }
-
-.stTextInput input::placeholder { color: rgba(100,116,139,0.5) !important; }
-
-/* Input wrapper slide-in */
-div[data-testid="stTextInput"]:nth-of-type(1) { animation: fadeUp 0.8s ease 0.7s both; }
-div[data-testid="stTextInput"]:nth-of-type(2) { animation: fadeUp 0.8s ease 0.82s both; }
+input::placeholder { color: #94a3b8 !important; font-weight: 400 !important; }
 
 /* ── Submit button ── */
 div.stFormSubmitButton > button {
     width: 100% !important;
-    padding: 0.88rem !important;
-    border-radius: 14px !important;
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 0.95rem !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.06em !important;
-    text-transform: uppercase !important;
-    background: linear-gradient(135deg, rgba(56,189,248,0.28), rgba(14,165,233,0.18)) !important;
-    border: 1px solid rgba(56,189,248,0.45) !important;
-    color: #7dd3fc !important;
+    background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%) !important;
+    color: #ffffff !important; border: none !important;
+    border-radius: 16px !important; padding: 16px 24px !important;
+    font-size: 16px !important; font-weight: 800 !important;
     cursor: pointer !important;
-    position: relative !important;
-    overflow: hidden !important;
-    box-shadow: 0 4px 20px rgba(56,189,248,0.16) !important;
-    transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1) !important;
-    animation: fadeUp 0.8s ease 0.95s both;
+    transition: all 0.3s ease !important;
+    box-shadow: 0 6px 24px rgba(37,99,235,0.40) !important;
+    margin-top: 10px !important;
+    letter-spacing: 0.04em !important;
+    text-transform: uppercase !important;
 }
-
-div.stFormSubmitButton > button::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -100%; width: 60%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
-    transition: left 0.55s ease;
-}
-
 div.stFormSubmitButton > button:hover {
-    background: linear-gradient(135deg, rgba(56,189,248,0.45), rgba(14,165,233,0.3)) !important;
-    border-color: rgba(56,189,248,0.72) !important;
-    color: #e0f2fe !important;
-    transform: translateY(-3px) scale(1.02) !important;
-    box-shadow: 0 8px 30px rgba(56,189,248,0.3) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 32px rgba(37,99,235,0.50) !important;
 }
+div.stFormSubmitButton > button:active { transform: translateY(0) !important; }
 
-div.stFormSubmitButton > button:hover::before { left: 160%; }
-
-div.stFormSubmitButton > button:active {
-    transform: translateY(-1px) scale(0.99) !important;
+/* ── Back button ── */
+.stButton > button {
+    width: 100% !important;
+    background: #f1f5f9 !important;
+    color: #475569 !important;
+    border: 2px solid #e2e8f0 !important;
+    border-radius: 16px !important; padding: 13px 24px !important;
+    font-size: 14px !important; font-weight: 700 !important;
+    cursor: pointer !important;
+    transition: all 0.25s ease !important;
+    box-shadow: none !important; margin-top: 8px !important;
+    letter-spacing: 0.02em !important;
+}
+.stButton > button:hover {
+    background: #e2e8f0 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
 }
 
 /* ── Alerts ── */
-[data-testid="stAlert"] {
-    border-radius: 12px !important;
-    font-family: 'DM Sans', sans-serif !important;
-    font-size: 0.9rem !important;
-    animation: fadeUp 0.5s ease both;
+div[data-testid="stAlert"] {
+    border-radius: 14px !important; font-size: 14px !important;
+    font-weight: 600 !important;
+    animation: fadeUp 0.4s ease both;
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Back link ── */
-.back-link {
-    text-align: center;
-    font-size: 0.82rem;
-    color: rgba(100,116,139,0.7);
-    margin-top: 1.4rem;
-    animation: fadeUp 0.8s ease 1.1s both;
+/* ── Divider text ── */
+.or-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0 4px; color: #94a3b8;
+    font-size: 12px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
 }
-
-.back-link a {
-    color: #38bdf8;
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
+.or-divider::before, .or-divider::after {
+    content: ''; flex: 1; height: 1px; background: #e2e8f0;
 }
-
-.back-link a:hover { color: #7dd3fc; }
 
 /* ── Footer ── */
 .footer-text {
-    text-align: center;
-    font-size: 0.72rem;
-    color: rgba(100,116,139,0.45);
-    margin-top: 1.6rem;
-    letter-spacing: 0.06em;
-    animation: fadeUp 0.8s ease 1.2s both;
+    text-align: center; font-size: 12px;
+    color: #94a3b8; margin-top: 24px;
+    font-weight: 500; letter-spacing: 0.04em;
 }
 
-/* Hide Streamlit chrome */
-#MainMenu, footer, header,
-[data-testid="stToolbar"],
-[data-testid="stDecoration"] { display: none !important; }
-
-.block-container {
-    padding-top: 3.5rem !important;
-    padding-bottom: 2rem !important;
-}
+/* Scrollbar */
+::-webkit-scrollbar       { width: 6px; }
+::-webkit-scrollbar-track { background: #f1f5f9; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Hero ──────────────────────────────────────────────────
-st.markdown('<div class="key-wrap"><span class="key-icon">🔑</span></div>', unsafe_allow_html=True)
-st.markdown('<h1 class="login-title">Welcome Back</h1>', unsafe_allow_html=True)
-st.markdown('<p class="login-subtitle">Sign in to your account</p>', unsafe_allow_html=True)
-st.markdown('<hr class="divider">', unsafe_allow_html=True)
+# ── Ticker + Navbar ──────────────────────────────────────
+st.markdown("""
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <span class="ticker-item">🌤 Climate Matched Trips</span>
+    <span class="ticker-item">🌍 AI Powered Travel</span>
+    <span class="ticker-item">✈️ Smart Planning</span>
+    <span class="ticker-item">🏨 Curated Stays</span>
+    <span class="ticker-item">⭐ 4.9 Rating</span>
+    <span class="ticker-item">🌤 Climate Matched Trips</span>
+    <span class="ticker-item">🌍 AI Powered Travel</span>
+    <span class="ticker-item">✈️ Smart Planning</span>
+    <span class="ticker-item">🏨 Curated Stays</span>
+    <span class="ticker-item">⭐ 4.9 Rating</span>
+  </div>
+</div>
+<div class="navbar-shell"></div>
+<div class="nav-brand">🌍 Smart Travel Planner</div>
+""", unsafe_allow_html=True)
+
+# ── Navbar back button ───────────────────────────────────
+col1, col2, col3 = st.columns([10, 1, 1])
+with col3:
+    if st.button("🏠 Home", key="nav_home"):
+        st.switch_page("welcome.py")
+
+st.markdown('<div class="page-spacer"></div>', unsafe_allow_html=True)
+
+st.markdown("""
+<div class="login-hero">
+    <div class="hero-content">
+        <div style="font-size:70px;">🌍</div>
+        <h1>Welcome Back</h1>
+        <p>Sign in to continue your travel journey</p>
+    </div>
+</div>
+""", unsafe_allow_html=True)
+
+
+# ── DB path ──────────────────────────────────────────────
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH  = os.path.join(BASE_DIR, "tourist.db")
+
+# ── Card HTML ────────────────────────────────────────────
+
 
 # ── Login Form ────────────────────────────────────────────
 with st.form("login_form"):
-    username = st.text_input("👤  Username", placeholder="Enter your username")
-    password = st.text_input("🔒  Password", placeholder="Enter your password", type="password")
-    st.markdown("<div style='height:0.5rem'></div>", unsafe_allow_html=True)
+    username  = st.text_input("👤  Username", placeholder="Enter your username")
+    password  = st.text_input("🔒  Password", placeholder="Enter your password", type="password")
+    st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
     login_btn = st.form_submit_button("🚀  Sign In")
 
 if login_btn:
-    conn = sqlite3.connect(DB_PATH)
+    conn   = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute("""
-        SELECT * FROM users
-        WHERE name=? AND password=?
-    """, (username, password))
-    user = cursor.fetchone()
+    cursor.execute("SELECT * FROM users WHERE name=? AND password=?", (username, password))
+    user   = cursor.fetchone()
     conn.close()
 
     if user:
@@ -321,11 +401,10 @@ if login_btn:
         st.switch_page("pages/1_Recommendations.py")
     else:
         st.error("❌ Invalid username or password. Please try again.")
-        st.markdown('</div>', unsafe_allow_html=True)
-# Back button
-if st.button("← Back to Home"):
-    st.switch_page("welcome.py")
 
+
+
+# ── Footer ────────────────────────────────────────────────
 st.markdown("""
 <p class="footer-text">© 2025 Smart Travel Planner · All rights reserved</p>
 """, unsafe_allow_html=True)
