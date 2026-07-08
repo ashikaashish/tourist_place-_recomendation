@@ -1,6 +1,4 @@
 import streamlit as st
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 st.set_page_config(
     page_title="Tourist Recommendation System",
@@ -8,8 +6,13 @@ st.set_page_config(
     layout="wide"
 )
 
-# ── ALL STYLES + STATIC HTML ─────────────────────────────────────────────────
-st.markdown("""
+# ── 1. ALL CSS (ticker, navbar, hero, modal, stats, footer) ──────────────────
+# Using st.html, not st.markdown: st.markdown runs content through a
+# markdown-to-HTML pipeline first, which is unreliable for large blocks of
+# raw HTML/CSS (tags can get mangled or dumped as literal text after a
+# certain point). st.html renders raw HTML directly into the page, no
+# markdown parsing, no iframe.
+st.html("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&display=swap');
 
@@ -19,166 +22,104 @@ html,body,[data-testid="stAppViewContainer"],[data-testid="stMain"],.main{
   background:#fafaf8 !important;
   font-family:'Inter',sans-serif;
   color:#1a1814;
-  overflow-x:hidden;
 }
 
 #MainMenu,footer,header,[data-testid="stToolbar"],[data-testid="stDecoration"],
 [data-testid="stSidebar"],[data-testid="collapsedControl"]{display:none !important;}
 
-.block-container{
-  padding:0 !important;
-  max-width:100% !important;
-}
+.block-container{padding:0 !important;max-width:100% !important;}
+[data-testid="stVerticalBlock"],[data-testid="stVerticalBlockBorderWrapper"]{gap:0 !important;}
 
-[data-testid="stVerticalBlock"],[data-testid="stVerticalBlockBorderWrapper"]{
-  gap:0 !important;
-}
+/* push page content down so it isn't hidden under the fixed ticker+navbar */
+.page-spacer{height:100px;}
 
-/* ══════════════════════════════════
-   TICKER
-══════════════════════════════════ */
+/* TICKER */
 .ticker-wrap{
   position:fixed;top:0;left:0;right:0;z-index:2000;
   background:linear-gradient(90deg,#1a1410,#2d2218,#1a1410);
   height:34px;display:flex;align-items:center;overflow:hidden;
   border-bottom:1px solid rgba(201,169,110,0.3);
 }
-.ticker-track{
-  display:flex;white-space:nowrap;
-  animation:tickerScroll 30s linear infinite;
-}
+.ticker-track{display:flex;white-space:nowrap;animation:tickerScroll 30s linear infinite;}
 .ticker-track:hover{animation-play-state:paused;}
 .ticker-item{
-  display:inline-flex;align-items:center;gap:0.5rem;
-  padding:0 2.2rem;
+  display:inline-flex;align-items:center;gap:0.5rem;padding:0 2.2rem;
   font-size:0.7rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;
   color:rgba(201,169,110,0.85);
 }
 .ticker-sep{color:rgba(255,255,255,0.25);}
 @keyframes tickerScroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
 
-/* ══════════════════════════════════
-   NAVBAR SHELL  (brand only — buttons injected by Streamlit below)
-══════════════════════════════════ */
+/* NAVBAR shell + brand (fixed, sits below ticker) */
 .navbar-shell{
-  position:fixed;top:34px;left:0;right:0;z-index:1500;
-  height:66px;
-  background:rgba(250,250,248,0.93);
+  position:fixed;top:34px;left:0;right:0;z-index:1500;height:66px;
+  background:rgba(250,250,248,0.96);
   backdrop-filter:blur(20px) saturate(160%);
   border-bottom:1px solid rgba(201,169,110,0.18);
-  animation:navDown 0.7s cubic-bezier(0.16,1,0.3,1) 0.1s both;
-  pointer-events:none;
 }
-@keyframes navDown{from{opacity:0;transform:translateY(-100%);}to{opacity:1;transform:translateY(0);}}
-
 .nav-brand{
-  position:fixed;top:34px;left:4rem;z-index:1600;
-  height:66px;display:flex;align-items:center;gap:0.65rem;
-  animation:fadeR 0.7s ease 0.5s both;
-  pointer-events:none;
+  position:fixed;top:34px;left:4rem;z-index:1600;height:66px;
+  display:flex;align-items:center;gap:0.65rem;
 }
-@keyframes fadeR{from{opacity:0;transform:translateX(-10px);}to{opacity:1;transform:translateX(0);}}
 .nav-logo{font-size:1.55rem;line-height:1;}
 .nav-name{
   font-family:'Cormorant Garamond',serif;
   font-size:1.18rem;font-weight:600;color:#1a1814;letter-spacing:0.03em;
 }
 
-/* ── Streamlit columns positioned into navbar ── */
-[data-testid="stHorizontalBlock"]{
-  position:fixed !important;
-  top:34px !important;
-  right:3rem !important;
-  height:66px !important;
-  width:auto !important;
-  display:flex !important;
-  align-items:center !important;
-  gap:0.6rem !important;
-  z-index:1600 !important;
-  background:transparent !important;
-  padding:0 !important;
-  margin:0 !important;
+/* Streamlit nav buttons floated into navbar.
+   This page has only one st.columns() call, so targeting
+   stHorizontalBlock directly (no JS, no class tag) is safe here. */
+div[data-testid="stHorizontalBlock"]{
+  position:fixed !important;top:34px !important;right:3rem !important;
+  height:66px !important;width:auto !important;display:flex !important;
+  align-items:center !important;gap:0.6rem !important;z-index:1600 !important;
+  background:transparent !important;padding:0 !important;margin:0 !important;
 }
-
-[data-testid="stHorizontalBlock"] > [data-testid="stColumn"]{
-  width:auto !important;
-  flex:none !important;
-  min-width:0 !important;
-  padding:0 !important;
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]{
+  width:auto !important;flex:none !important;min-width:0 !important;padding:0 !important;
 }
-
-/* ── ALL THREE nav buttons base ── */
-[data-testid="stHorizontalBlock"] div.stButton > button {
-  display:inline-flex !important;
-  align-items:center !important;
-  justify-content:center !important;
-  height:38px !important;
-  padding:0 1.2rem !important;
-  border-radius:8px !important;
-  font-family:'Inter',sans-serif !important;
-  font-size:0.81rem !important;
-  font-weight:500 !important;
-  letter-spacing:0.03em !important;
-  cursor:pointer !important;
-  white-space:nowrap !important;
-  transition:all 0.22s cubic-bezier(0.34,1.56,0.64,1) !important;
-  box-shadow:none !important;
+div[data-testid="stHorizontalBlock"] div.stButton > button{
+  display:inline-flex !important;align-items:center !important;justify-content:center !important;
+  height:38px !important;padding:0 1.2rem !important;border-radius:8px !important;
+  font-family:'Inter',sans-serif !important;font-size:0.81rem !important;font-weight:500 !important;
+  cursor:pointer !important;white-space:nowrap !important;
+  transition:all 0.22s ease !important;box-shadow:none !important;
 }
-
-/* Register — ghost */
-[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(1) div.stButton > button{
-  background:rgba(30,20,10,0.05) !important;
-  color:#4a3d2a !important;
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:nth-child(1) div.stButton > button{
+  background:rgba(30,20,10,0.05) !important;color:#4a3d2a !important;
   border:1.5px solid rgba(60,40,20,0.15) !important;
 }
-[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(1) div.stButton > button:hover{
-  background:rgba(30,20,10,0.1) !important;
-  border-color:rgba(60,40,20,0.32) !important;
-  transform:translateY(-2px) !important;
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:nth-child(1) div.stButton > button:hover{
+  background:rgba(30,20,10,0.1) !important;transform:translateY(-2px) !important;
 }
-
-/* Login — outlined gold */
-[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) div.stButton > button{
-  background:transparent !important;
-  color:#6b5a3e !important;
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:nth-child(2) div.stButton > button{
+  background:transparent !important;color:#6b5a3e !important;
   border:1.5px solid rgba(201,169,110,0.5) !important;
 }
-[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(2) div.stButton > button:hover{
-  background:rgba(201,169,110,0.1) !important;
-  border-color:#c9a96e !important;
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:nth-child(2) div.stButton > button:hover{
+  background:rgba(201,169,110,0.1) !important;transform:translateY(-2px) !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:nth-child(3) div.stButton > button{
+  background:linear-gradient(135deg,#c9a96e,#a87828) !important;
+  color:#fff !important;border:none !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"]:nth-child(3) div.stButton > button:hover{
   transform:translateY(-2px) !important;
 }
 
-/* Admin — filled gold */
-[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(3) div.stButton > button{
-  background:linear-gradient(135deg,#c9a96e 0%,#a87828 100%) !important;
-  color:#fff !important;
-  border:none !important;
-  box-shadow:0 2px 12px rgba(180,130,40,0.3) !important;
-}
-[data-testid="stHorizontalBlock"] [data-testid="stColumn"]:nth-child(3) div.stButton > button:hover{
-  background:linear-gradient(135deg,#d4b47a,#c09030) !important;
-  transform:translateY(-2px) !important;
-  box-shadow:0 6px 20px rgba(180,130,40,0.42) !important;
-}
-
-/* ══════════════════════════════════
-   MODAL — pure CSS checkbox
-══════════════════════════════════ */
+/* ── MODAL ── */
 #modal-toggle{display:none;}
 #modal-toggle:not(:checked) ~ .modal-overlay{
-  opacity:1;pointer-events:all;
-  animation:overlayIn 0.4s ease both;
+  opacity:1;pointer-events:all;animation:overlayIn 0.4s ease both;
 }
 #modal-toggle:checked ~ .modal-overlay{
-  opacity:0;pointer-events:none;
-  transition:opacity 0.35s ease;
+  opacity:0;pointer-events:none;transition:opacity 0.35s ease;
 }
 @keyframes overlayIn{from{opacity:0;}to{opacity:1;}}
 .modal-overlay{
   position:fixed;inset:0;z-index:3000;
-  background:rgba(20,15,8,0.52);
-  backdrop-filter:blur(8px);
+  background:rgba(20,15,8,0.55);backdrop-filter:blur(8px);
   display:flex;align-items:center;justify-content:center;
 }
 .modal-box{
@@ -186,7 +127,7 @@ html,body,[data-testid="stAppViewContainer"],[data-testid="stMain"],.main{
   padding:2.5rem 2.8rem;max-width:420px;width:90%;
   box-shadow:0 30px 80px rgba(0,0,0,0.18),0 0 0 1px rgba(201,169,110,0.18);
   animation:popIn 0.45s cubic-bezier(0.34,1.56,0.64,1) 0.1s both;
-  text-align:center;position:relative;z-index:1;
+  text-align:center;
 }
 @keyframes popIn{from{opacity:0;transform:scale(0.8) translateY(24px);}to{opacity:1;transform:scale(1) translateY(0);}}
 .modal-icon{font-size:3rem;margin-bottom:1rem;}
@@ -199,126 +140,205 @@ html,body,[data-testid="stAppViewContainer"],[data-testid="stMain"],.main{
   display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;
   padding:0.65rem 2.2rem;border-radius:10px;
   background:linear-gradient(135deg,#c9a96e,#a87828);
-  color:#fff;font-size:0.88rem;font-weight:500;
-  cursor:pointer;
+  color:#fff;font-size:0.88rem;font-weight:500;cursor:pointer;
   box-shadow:0 4px 14px rgba(180,130,40,0.28);
-  transition:all 0.2s ease;user-select:none;
+  transition:all 0.2s ease;user-select:none;border:none;
 }
-.modal-close:hover{background:linear-gradient(135deg,#d4b47a,#c09030);transform:translateY(-2px);}
+.modal-close:hover{transform:translateY(-2px);}
 
-/* ══════════════════════════════════
-   HERO
-══════════════════════════════════ */
-.hero{
-  min-height:100vh;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:160px 2rem 100px;
+/* ── SPLIT HERO ── */
+.hero-split{
+  display:flex;
+  min-height:80vh;
+}
+
+/* LEFT panel */
+.hero-left{
+  width:52%;
+  background:#fafaf8;
+  display:flex;flex-direction:column;justify-content:center;
+  padding:4rem 3.5rem 4rem 4.5rem;
   position:relative;overflow:hidden;
-  background-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e');
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
 }
-.hero::before{
-  content:'';position:absolute;inset:0;
-  background:
-    radial-gradient(ellipse 65% 55% at 50% -5%,rgba(201,169,110,0.13) 0%,transparent 65%),
-    radial-gradient(ellipse 45% 35% at 88% 75%,rgba(160,210,185,0.09) 0%,transparent 60%),
-    radial-gradient(ellipse 40% 30% at 5%  80%,rgba(190,180,230,0.07) 0%,transparent 55%);
-  animation:auraPulse 9s ease-in-out infinite alternate;pointer-events:none;
-}
-@keyframes auraPulse{0%{opacity:0.6;transform:scale(1);}100%{opacity:1;transform:scale(1.05);}}
-.hero::after{
-  content:'';position:absolute;inset:0;
+.hero-left::before{
+  content:'';position:absolute;inset:0;pointer-events:none;
   background-image:radial-gradient(circle,rgba(201,169,110,0.1) 1px,transparent 1px);
-  background-size:36px 36px;pointer-events:none;
-  mask-image:radial-gradient(ellipse 75% 65% at 50% 50%,black 20%,transparent 80%);
-  -webkit-mask-image:radial-gradient(ellipse 75% 65% at 50% 50%,black 20%,transparent 80%);
+  background-size:28px 28px;
 }
-.hero-inner{position:relative;z-index:5;text-align:center;max-width:780px;margin:0 auto;}
-
-.orb-wrap{width:140px;height:140px;position:relative;margin:0 auto 2.2rem;animation:fadeUp 0.8s ease 0.9s both;}
-.orb-ring{position:absolute;border-radius:50%;border:1px solid rgba(201,169,110,0.22);top:50%;left:50%;transform:translate(-50%,-50%);}
-.orb-ring:nth-child(1){width:162px;height:162px;animation:ringOut 3s ease-in-out infinite;}
-.orb-ring:nth-child(2){width:196px;height:196px;animation:ringOut 3s ease-in-out 0.7s infinite;}
-@keyframes ringOut{0%,100%{opacity:0.45;transform:translate(-50%,-50%) scale(1);}50%{opacity:0;transform:translate(-50%,-50%) scale(1.12);}}
-.orb-core{
-  position:absolute;inset:0;border-radius:50%;
-  background:radial-gradient(circle at 35% 32%,rgba(255,255,255,0.95) 0%,rgba(245,233,210,0.9) 40%,rgba(201,169,110,0.6) 80%,rgba(160,118,55,0.45) 100%);
-  box-shadow:0 0 0 1px rgba(201,169,110,0.3),0 20px 50px rgba(180,135,60,0.25),inset 0 4px 16px rgba(255,255,255,0.6),inset 0 -4px 12px rgba(140,95,30,0.15);
-  display:flex;align-items:center;justify-content:center;font-size:3.8rem;
-  animation:orbFloat 5.5s ease-in-out infinite;
+.hero-left::after{
+  content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;
+  background:linear-gradient(180deg,transparent,#c9a96e,transparent);
+  border-radius:0 2px 2px 0;
 }
-@keyframes orbFloat{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-13px) rotate(4deg);}}
+.hero-left-inner{position:relative;z-index:2;max-width:500px;}
 
-.eyebrow{
+.split-eyebrow{
   display:inline-flex;align-items:center;gap:0.5rem;
   background:rgba(201,169,110,0.1);border:1px solid rgba(201,169,110,0.32);
   border-radius:100px;padding:0.35rem 1rem;
   font-size:0.7rem;font-weight:600;color:#8a6730;
   letter-spacing:0.14em;text-transform:uppercase;
-  margin-bottom:1.6rem;animation:fadeUp 0.8s ease 1.05s both;
+  margin-bottom:1.6rem;
 }
-.edot{width:6px;height:6px;border-radius:50%;background:#c9a96e;animation:edotPulse 2s ease-in-out infinite;}
+.edot{
+  width:6px;height:6px;border-radius:50%;background:#c9a96e;
+  display:inline-block;
+  animation:edotPulse 2s ease-in-out infinite;
+}
 @keyframes edotPulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(0.6);}}
 
-.htitle{
+.split-title{
   font-family:'Cormorant Garamond',serif;
-  font-size:clamp(3rem,7.5vw,5.8rem);
-  font-weight:300;line-height:1.08;color:#1a1814;letter-spacing:-0.02em;
-  margin-bottom:0.15rem;animation:titleUp 1s cubic-bezier(0.16,1,0.3,1) 1.2s both;
+  font-size:clamp(2.6rem,4vw,4.4rem);
+  font-weight:300;line-height:1.06;color:#1a1814;
+  letter-spacing:-0.02em;margin-bottom:0.9rem;
 }
-.htitle strong{
-  font-weight:700;
-  background:linear-gradient(135deg,#c9a96e 0%,#7a5420 55%,#c9a96e 100%);
+.split-title strong{
+  font-weight:700;display:block;
+  background:linear-gradient(135deg,#c9a96e 0%,#7a5420 50%,#c9a96e 100%);
   background-size:200% auto;
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-  animation:shimmer 4s linear 2.5s infinite;
+  animation:shimmer 4s linear 1s infinite;
 }
 @keyframes shimmer{0%{background-position:0% center;}100%{background-position:200% center;}}
-@keyframes titleUp{from{opacity:0;transform:translateY(32px);}to{opacity:1;transform:translateY(0);}}
 
-.hsub{
+.split-sub{
   font-family:'Cormorant Garamond',serif;
-  font-size:clamp(1.2rem,2.5vw,1.85rem);font-weight:300;font-style:italic;
-  color:#ffffff;margin-bottom:1.5rem;text-shadow:1px 1px 8px rgba(0,0,0,0.8);
-  animation:fadeUp 0.8s ease 1.45s both;
+  font-size:1.22rem;font-weight:300;font-style:italic;
+  color:#6b5a3e;margin-bottom:0.8rem;
 }
-.hdesc{
-  font-size:0.97rem;line-height:1.76;color:#f5f5f5;text-shadow:1px 1px 6px rgba(0,0,0,0.8);
-  max-width:490px;margin:0 auto 2.8rem;animation:fadeUp 0.8s ease 1.6s both;
+.split-desc{
+  font-size:0.92rem;line-height:1.78;color:#5a4d3a;margin-bottom:1.8rem;
 }
-.feat-row{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;margin-bottom:3rem;animation:fadeUp 0.8s ease 1.75s both;}
-.feat-item{display:flex;align-items:center;gap:0.45rem;padding:0 1.3rem;font-size:0.83rem;font-weight:500;color:#ffffff;text-shadow:1px 1px 6px rgba(0,0,0,0.8);}
-.feat-item:not(:last-child){border-right:1px solid rgba(201,169,110,0.28);}
-@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
 
-/* ══════════════════════════════════
-   STATS
-══════════════════════════════════ */
-.stats-bar{background:#fff;border-top:1px solid rgba(201,169,110,0.18);border-bottom:1px solid rgba(201,169,110,0.18);padding:2.2rem 0;}
-.stats-inner{max-width:860px;margin:0 auto;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;padding:0 2rem;}
+.split-cta-note{
+  display:flex;align-items:center;gap:0.6rem;
+  background:rgba(201,169,110,0.08);border:1px solid rgba(201,169,110,0.28);
+  border-radius:10px;padding:0.7rem 1rem;margin-bottom:1.8rem;
+  font-size:0.82rem;color:#7a6244;
+}
+
+.split-feat-row{display:flex;flex-wrap:wrap;gap:0.55rem;margin-bottom:2rem;}
+.split-feat{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  background:#fff;border:1px solid rgba(201,169,110,0.25);
+  border-radius:100px;padding:0.3rem 0.85rem;
+  font-size:0.74rem;font-weight:500;color:#6b5a3e;
+  box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+
+.trust-row{display:flex;align-items:center;gap:1.1rem;}
+.trust-avatars{display:flex;}
+.trust-avatar{
+  width:32px;height:32px;border-radius:50%;border:2px solid #fff;
+  background:linear-gradient(135deg,#c9a96e,#8a5f20);
+  margin-left:-9px;display:flex;align-items:center;justify-content:center;
+  font-size:0.65rem;font-weight:600;color:#fff;
+}
+.trust-avatar:first-child{margin-left:0;}
+.trust-text{font-size:0.76rem;color:#7a6a52;line-height:1.45;}
+.trust-text strong{color:#1a1814;font-weight:600;}
+
+/* RIGHT panel */
+.hero-right{
+  width:48%;position:relative;overflow:hidden;min-height:500px;
+  border-radius:0;
+}
+.hero-photo{
+  position:absolute;inset:0;
+  background:url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1200&q=85') center/cover no-repeat;
+}
+.hero-photo::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(250,250,248,0.25) 0%,transparent 25%),
+             linear-gradient(0deg,rgba(10,8,5,0.35) 0%,transparent 50%);
+}
+
+.dest-badge{
+  position:absolute;bottom:2rem;left:1.8rem;
+  background:rgba(255,255,255,0.93);backdrop-filter:blur(12px);
+  border-radius:14px;padding:0.85rem 1.1rem;
+  box-shadow:0 8px 30px rgba(0,0,0,0.15);
+  border:1px solid rgba(201,169,110,0.22);min-width:190px;
+}
+.dest-badge-loc{
+  font-size:0.65rem;font-weight:600;color:#c9a96e;
+  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.2rem;
+}
+.dest-badge-name{
+  font-family:'Cormorant Garamond',serif;font-size:1.1rem;
+  font-weight:600;color:#1a1814;margin-bottom:0.3rem;
+}
+.dest-badge-row{display:flex;align-items:center;gap:0.5rem;}
+.dest-badge-tag{
+  font-size:0.65rem;font-weight:500;padding:0.15rem 0.5rem;border-radius:100px;
+  background:rgba(201,169,110,0.12);color:#7a5820;border:1px solid rgba(201,169,110,0.28);
+}
+.dest-badge-rating{font-size:0.73rem;font-weight:600;color:#1a1814;margin-left:auto;}
+
+.photo-pill{
+  position:absolute;top:1.8rem;right:1.8rem;
+  background:rgba(255,255,255,0.9);backdrop-filter:blur(10px);
+  border-radius:100px;padding:0.42rem 0.9rem;
+  font-size:0.7rem;font-weight:600;color:#6b5a3e;
+  border:1px solid rgba(201,169,110,0.25);
+  box-shadow:0 4px 16px rgba(0,0,0,0.1);
+  display:flex;align-items:center;gap:0.4rem;
+}
+.photo-dot{
+  width:7px;height:7px;border-radius:50%;background:#c9a96e;
+  display:inline-block;
+  animation:edotPulse 2s ease-in-out infinite;
+}
+
+/* ── STATS ── */
+.stats-bar{
+  background:#fff;
+  border-top:1px solid rgba(201,169,110,0.18);
+  border-bottom:1px solid rgba(201,169,110,0.18);
+  padding:2.2rem 0;
+}
+.stats-inner{
+  max-width:860px;margin:0 auto;
+  display:flex;justify-content:center;align-items:center;flex-wrap:wrap;padding:0 2rem;
+}
 .stat-item{flex:1;min-width:160px;text-align:center;padding:0.5rem 1.5rem;}
-.stat-item:not(:last-child){border-right:1px solid rgba(201,169,110,0.2);}
-.stat-n{font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;color:#c9a96e;line-height:1;margin-bottom:0.25rem;}
-.stat-l{font-size:0.73rem;font-weight:500;color:rgba(80,65,42,0.52);letter-spacing:0.1em;text-transform:uppercase;}
+.stat-item+.stat-item{border-left:1px solid rgba(201,169,110,0.2);}
+.stat-n{
+  font-family:'Cormorant Garamond',serif;font-size:2.4rem;font-weight:700;
+  color:#c9a96e;line-height:1;margin-bottom:0.25rem;
+}
+.stat-l{
+  font-size:0.73rem;font-weight:500;color:rgba(80,65,42,0.55);
+  letter-spacing:0.1em;text-transform:uppercase;
+}
 
-/* ══════════════════════════════════
-   FOOTER
-══════════════════════════════════ */
+/* ── FOOTER ── */
 .site-footer{
   background:#f2ede4;border-top:1px solid rgba(201,169,110,0.22);
-  padding:1.8rem 4rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+  padding:1.8rem 4rem;display:flex;align-items:center;
+  justify-content:space-between;flex-wrap:wrap;gap:1rem;
 }
 .footer-brand{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:600;color:#6b5a3e;}
 .footer-links{display:flex;gap:1.5rem;}
-.footer-link{font-size:0.76rem;color:rgba(107,90,62,0.58);text-decoration:none;transition:color 0.2s;}
+.footer-link{font-size:0.76rem;color:rgba(107,90,62,0.58);text-decoration:none;}
 .footer-link:hover{color:#c9a96e;}
 .footer-copy{font-size:0.73rem;color:rgba(100,80,50,0.45);letter-spacing:0.06em;}
 
+/* responsive: stack hero on narrow screens */
+@media (max-width: 900px){
+  .hero-split{flex-direction:column;}
+  .hero-left,.hero-right{width:100%;}
+  .hero-right{min-height:320px;}
+  div[data-testid="stHorizontalBlock"]{right:1rem !important;}
+  .nav-brand{left:1.2rem !important;}
+}
 </style>
+""")
 
-<!-- TICKER -->
+
+# ── 2. TICKER + NAVBAR SHELL + BRAND (fixed, always on top) ──────────────────
+st.html("""
 <div class="ticker-wrap">
   <div class="ticker-track">
     <span class="ticker-item">🗺️ 120+ Destinations <span class="ticker-sep">·</span></span>
@@ -339,15 +359,38 @@ html,body,[data-testid="stAppViewContainer"],[data-testid="stMain"],.main{
     <span class="ticker-item">🌍 AI-Powered Recommendations <span class="ticker-sep">·</span></span>
   </div>
 </div>
-
-<!-- NAVBAR SHELL + BRAND -->
 <div class="navbar-shell"></div>
 <div class="nav-brand">
   <span class="nav-logo">🌍</span>
   <span class="nav-name">Smart Travel Planner</span>
 </div>
+""")
 
-<!-- MODAL -->
+
+# ── 3. NAV BUTTONS (real Streamlit) ───────────────────────────────────────────
+# This page has exactly one st.columns() call, so it's safe to target
+# div[data-testid="stHorizontalBlock"] directly in CSS (see step 1) without
+# needing a JS-based class tag. If you ever add another st.columns() block
+# to this same page, give this one a wrapper class instead (e.g. via
+# st.container) so the CSS doesn't accidentally target the wrong block.
+nav_col1, nav_col2, nav_col3 = st.columns([1, 1, 1])
+with nav_col1:
+    if st.button("📝  Register", key="nav_register"):
+        st.switch_page("pages/home.py")
+with nav_col2:
+    if st.button("👤  Login", key="nav_login"):
+        st.switch_page("pages/login.py")
+with nav_col3:
+    if st.button("🔐  Admin", key="nav_admin"):
+        st.switch_page("pages/adminreg.py")
+
+
+# ── 4. PAGE SPACER (clears the fixed ticker + navbar) ────────────────────────
+st.html('<div class="page-spacer"></div>')
+
+
+# ── 5. MAIN PAGE BODY — raw HTML via st.html, no markdown parsing, no iframe ──
+st.html("""
 <input type="checkbox" id="modal-toggle">
 <div class="modal-overlay">
   <div class="modal-box">
@@ -357,32 +400,76 @@ html,body,[data-testid="stAppViewContainer"],[data-testid="stMain"],.main{
       Your personalised travel journey starts here.<br>
       Discover destinations crafted around your budget, climate, and travel style.
     </div>
-    <label class="modal-close" for="modal-toggle">✨ &nbsp;Let's Explore</label>
+    <label class="modal-close" for="modal-toggle">✨  Let's Explore</label>
   </div>
 </div>
 
-<!-- HERO -->
-<section class="hero">
-  <div class="hero-inner">
-    <div class="orb-wrap">
-      <div class="orb-ring"></div>
-      <div class="orb-ring"></div>
-      <div class="orb-core">🌍</div>
-    </div>
-    <div class="eyebrow"><span class="edot"></span> AI-Powered Travel Intelligence</div>
-    <h1 class="htitle">Discover Your<br><strong>Perfect Journey</strong></h1>
-    <p class="hsub">Curated destinations, built around you</p>
-    <p class="hdesc">Tell us your budget, preferred climate, and travel style — and we'll craft recommendations that feel handpicked by a local expert.</p>
-    <div class="feat-row">
-      <div class="feat-item">🗺️ Destinations</div>
-      <div class="feat-item">💰 Budget Match</div>
-      <div class="feat-item">🌤️ Climate Filter</div>
-      <div class="feat-item">📅 Trip Planner</div>
+<section class="hero-split">
+
+  <div class="hero-left">
+    <div class="hero-left-inner">
+
+      <div class="split-eyebrow">
+        <span class="edot"></span>&nbsp; AI-Powered Travel Intelligence
+      </div>
+
+      <h1 class="split-title">
+        Discover Your<br>
+        <strong>Perfect Journey</strong>
+      </h1>
+
+      <p class="split-sub">Curated destinations, built around you</p>
+      <p class="split-desc">
+        Tell us your budget, preferred climate, and travel style —
+        we'll craft recommendations that feel handpicked by a local expert.
+      </p>
+
+      <div class="split-cta-note">
+        👆&nbsp; Use the <strong>Register</strong> or <strong>Login</strong> buttons at the top right to get started
+      </div>
+
+      <div class="split-feat-row">
+        <span class="split-feat">🗺️ Destinations</span>
+        <span class="split-feat">💰 Budget Match</span>
+        <span class="split-feat">🌤️ Climate Filter</span>
+        <span class="split-feat">📅 Trip Planner</span>
+        <span class="split-feat">🤖 ML Powered</span>
+      </div>
+
+      <div class="trust-row">
+        <div class="trust-avatars">
+          <div class="trust-avatar">AR</div>
+          <div class="trust-avatar">PK</div>
+          <div class="trust-avatar">SM</div>
+          <div class="trust-avatar">+</div>
+        </div>
+        <div class="trust-text">
+          <strong>50,000+ travellers</strong> found their perfect trip<br>
+          ⭐⭐⭐⭐⭐&nbsp; 4.9 average rating
+        </div>
+      </div>
+
     </div>
   </div>
+
+  <div class="hero-right">
+    <div class="hero-photo"></div>
+    <div class="dest-badge">
+      <div class="dest-badge-loc">📍 Featured Destination</div>
+      <div class="dest-badge-name">Taj Mahal, Agra</div>
+      <div class="dest-badge-row">
+        <span class="dest-badge-tag">🌤️ Moderate</span>
+        <span class="dest-badge-tag">💰 Medium</span>
+        <span class="dest-badge-rating">⭐ 4.9</span>
+      </div>
+    </div>
+    <div class="photo-pill">
+      <span class="photo-dot"></span>&nbsp; 120+ destinations available
+    </div>
+  </div>
+
 </section>
 
-<!-- STATS -->
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat-item"><div class="stat-n">120+</div><div class="stat-l">Destinations</div></div>
@@ -392,7 +479,6 @@ html,body,[data-testid="stAppViewContainer"],[data-testid="stMain"],.main{
   </div>
 </div>
 
-<!-- FOOTER -->
 <footer class="site-footer">
   <div class="footer-brand">🌍 Smart Travel Planner</div>
   <div class="footer-links">
@@ -402,17 +488,4 @@ html,body,[data-testid="stAppViewContainer"],[data-testid="stMain"],.main{
   </div>
   <span class="footer-copy">© 2025 Smart Travel Planner · All rights reserved</span>
 </footer>
-""", unsafe_allow_html=True)
-
-
-# ── REAL Streamlit buttons — CSS positions them into the navbar ───────────────
-col1, col2, col3 = st.columns([1, 1, 1])
-with col1:
-    if st.button("📝  Register"):
-        st.switch_page("pages/home.py")
-with col2:
-    if st.button("👤  Login"):
-        st.switch_page("pages/login.py")
-with col3:
-    if st.button("🔐  Admin"):
-        st.switch_page("pages/adminreg.py")
+""")

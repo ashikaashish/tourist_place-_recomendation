@@ -13,294 +13,348 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------
-# CSS — same theme as login.py / adminreg.py
+# CSS — sidebar + KPI card + bar-chart theme
 # ---------------------------------------------------
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
 
-* { font-family: 'Poppins', sans-serif; font-weight: 700; box-sizing: border-box; margin: 0; padding: 0; }
+* { font-family: 'Poppins', sans-serif; font-weight: 600; box-sizing: border-box; margin: 0; padding: 0; }
 
 /* Hide Streamlit chrome */
 header, [data-testid="stHeader"], [data-testid="stToolbar"],
 [data-testid="stDecoration"], #MainMenu, footer,
-[data-testid="stSidebar"], [data-testid="collapsedControl"] {
+[data-testid="collapsedControl"] {
     display: none !important;
 }
-.block-container { padding-top: 0 !important; max-width: 100% !important; }
+.block-container { padding: 0 !important; max-width: 100% !important; }
 
-/* ── Background ── */
 html, body, .stApp {
     background: #f0f4fa !important;
 }
-.stApp > * { position: relative; z-index: 2; }
 
-/* ── Ticker bar ── */
-.ticker-wrap {
-    position: fixed; top: 0; left: 0; right: 0; z-index: 2000;
-    background: #1a1410;
-    height: 34px; display: flex; align-items: center; overflow: hidden;
+/* ── Custom dark icon sidebar (replaces Streamlit's native sidebar) ── */
+[data-testid="stSidebar"] {
+    background: #15192b !important;
+    width: 76px !important;
+    min-width: 76px !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.18);
 }
-.ticker-track {
-    display: flex; white-space: nowrap;
-    animation: tickerScroll 30s linear infinite;
+[data-testid="stSidebar"] > div {
+    padding-top: 28px !important;
 }
-.ticker-item {
-    padding: 0 2rem; color: #c9a96e;
-    font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.8px;
-}
-@keyframes tickerScroll {
-    0%   { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-}
+[data-testid="stSidebarNav"] { display: none !important; }
 
-/* ── Navbar ── */
-.navbar-shell {
-    position: fixed; top: 34px; left: 0; right: 0; height: 64px; z-index: 1500;
-    background: rgba(255,255,255,0.88);
-    backdrop-filter: blur(24px);
-    border-bottom: 1px solid rgba(255,255,255,0.6);
-    box-shadow: 0 2px 20px rgba(0,0,0,0.12);
+.sb-logo {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, #6366f1, #818cf8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; margin: 0 auto 28px;
 }
-.nav-brand {
-    position: fixed; top: 34px; left: 2.5rem; height: 64px;
-    display: flex; align-items: center; z-index: 1600;
-    font-weight: 800; font-size: 18px; color: #1a1814;
-    letter-spacing: -0.3px;
+.sb-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; margin: 0 auto 14px;
+    color: #6b7280; background: transparent;
+    transition: all 0.2s ease; cursor: pointer;
+}
+.sb-icon.active {
+    background: rgba(99,102,241,0.18);
+    color: #818cf8;
+    box-shadow: inset 0 0 0 1.5px rgba(129,140,248,0.4);
 }
 
-/* Spacer under fixed bars */
-.page-spacer { height: 114px; }
+/* ── Top bar ── */
+.topbar {
+    background: #ffffff; border-bottom: 1px solid #e5e9f2;
+    padding: 18px 32px; display: flex; align-items: center;
+    justify-content: space-between;
+}
+.topbar-title { font-size: 19px; font-weight: 800; color: #0f172a; }
+.topbar-sub { font-size: 12px; font-weight: 500; color: #94a3b8; margin-top: 2px; }
 
-/* Navbar back button */
+/* Home button placed top-right via Streamlit columns */
 div[data-testid="stHorizontalBlock"] {
-    position: fixed !important; top: 34px !important;
-    right: 2.5rem !important; height: 64px !important;
-    z-index: 2000 !important; background: transparent !important;
-    display: flex !important; align-items: center !important;
+    padding: 14px 32px 0 0 !important;
 }
 div[data-testid="stHorizontalBlock"] .stButton > button {
-    width: auto !important; height: 38px !important;
-    padding: 0 20px !important; font-size: 13px !important;
+    width: auto !important; height: 36px !important;
+    padding: 0 18px !important; font-size: 12px !important;
     font-weight: 700 !important;
     background: #f1f5f9 !important; color: #374151 !important;
-    border: 1.5px solid #d1d5db !important;
+    border: 1.5px solid #e2e8f0 !important;
     border-radius: 10px !important;
-    box-shadow: none !important; animation: none !important;
-    margin-top: 0 !important;
+    box-shadow: none !important;
 }
 div[data-testid="stHorizontalBlock"] .stButton > button:hover {
     background: #e2e8f0 !important; transform: translateY(-1px) !important;
 }
 
-/* ── Hero ── */
-.dash-hero{
-    margin: 0 auto 30px;
-    max-width: 1200px;
-    min-height: 220px;
-    border-radius: 20px;
-    overflow: hidden;
-    background: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1400&q=80') center/cover no-repeat;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    position: relative;
-}
-.dash-hero::before{
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(255,255,255,0.30);
-}
-.hero-content{
-    position: relative;
-    z-index: 2;
-}
-.hero-content h1{
-    font-size: 38px;
-    font-weight: 800;
-    color: #1a1814;
-}
-.hero-content p{
-    color: #374151;
-    font-size: 15px;
-}
+/* ── Page padding wrapper ── */
+.dash-wrap { padding: 24px 32px 50px; }
 
-/* ── Content container ── */
-.dash-wrap {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 16px 60px;
+/* ── KPI cards row ── */
+.kpi-card {
+    background: #ffffff; border-radius: 16px; padding: 20px 22px;
+    box-shadow: 0 4px 18px rgba(15,23,42,0.06);
+    border: 1px solid #eef1f7;
+    height: 100%;
 }
+.kpi-icon {
+    width: 34px; height: 34px; border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; margin-bottom: 14px;
+}
+.kpi-icon.blue   { background: #e0e9ff; }
+.kpi-icon.yellow { background: #fff3d6; }
+.kpi-icon.pink   { background: #ffe3e9; }
+.kpi-icon.green  { background: #d9f7e8; }
 
-/* ── Section cards ── */
+.kpi-label { font-size: 12px; color: #64748b; font-weight: 600; margin-bottom: 6px; }
+.kpi-value { font-size: 26px; color: #0f172a; font-weight: 800; line-height: 1.1; }
+.kpi-delta { font-size: 11.5px; color: #94a3b8; font-weight: 600; margin-top: 4px; }
+
+.kpi-bar-track {
+    width: 100%; height: 6px; border-radius: 4px;
+    background: #eef1f7; margin-top: 14px; overflow: hidden;
+}
+.kpi-bar-fill { height: 100%; border-radius: 4px; }
+.kpi-bar-fill.blue   { background: #4f6df5; }
+.kpi-bar-fill.yellow { background: #f4b740; }
+.kpi-bar-fill.pink   { background: #f15b7e; }
+.kpi-bar-fill.green  { background: #22c08e; }
+
+/* ── Top destinations bar chart card ── */
+.dest-card {
+    background: #ffffff; border-radius: 16px; padding: 22px 24px;
+    box-shadow: 0 4px 18px rgba(15,23,42,0.06);
+    border: 1px solid #eef1f7; margin-bottom: 26px;
+}
+.dest-title { font-size: 14px; font-weight: 800; color: #0f172a; margin-bottom: 16px; }
+.dest-row { display: flex; align-items: center; margin-bottom: 12px; }
+.dest-name { width: 70px; font-size: 12.5px; color: #475569; font-weight: 700; }
+.dest-track { flex: 1; height: 9px; background: #eef1f7; border-radius: 5px; overflow: hidden; margin-right: 10px; }
+.dest-fill { height: 100%; border-radius: 5px; }
+.dest-count { width: 34px; font-size: 12px; color: #94a3b8; font-weight: 700; text-align: right; }
+
+/* ── Section cards (data tables) ── */
 .section-card {
-    background: rgba(255,255,255,0.92);
-    backdrop-filter: blur(20px) saturate(1.4);
-    -webkit-backdrop-filter: blur(20px) saturate(1.4);
-    border: 1px solid rgba(255,255,255,0.75);
-    border-radius: 20px;
-    padding: 24px 28px;
-    margin-bottom: 28px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.10);
+    background: #ffffff;
+    border: 1px solid #eef1f7;
+    border-radius: 16px;
+    padding: 22px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 18px rgba(15,23,42,0.06);
 }
-
-.section-card h3,
-.section-card div[data-testid="stMarkdownContainer"] h3,
-div[data-testid="stMarkdownContainer"] h3,
-.stMarkdown h3,
-h3 {
-    font-size: 22px !important;
+.section-card h3, div[data-testid="stMarkdownContainer"] h3 {
+    font-size: 16px !important;
     font-weight: 800 !important;
     color: #0f172a !important;
-    margin-bottom: 16px !important;
-    letter-spacing: -0.3px !important;
+    margin-bottom: 14px !important;
     padding-bottom: 10px !important;
-    border-bottom: 2px solid #e2e8f0 !important;
-    opacity: 1 !important;
+    border-bottom: 1px solid #eef1f7 !important;
 }
 
-.section-card .stTextInput input {
-    margin-bottom: 4px !important;
-}
-
-/* Search label text color */
-.section-card .stTextInput label,
-.stTextInput label,
-label[data-testid="stWidgetLabel"],
-div[data-testid="stTextInput"] label,
-div[data-testid="stTextInput"] label p {
-    color: #0f172a !important;
-    font-weight: 700 !important;
-    opacity: 1 !important;
+.section-card .stTextInput label, label[data-testid="stWidgetLabel"] {
+    color: #475569 !important; font-weight: 600 !important; font-size: 12.5px !important;
 }
 
 .section-card .stDownloadButton > button {
-    background: linear-gradient(135deg, #2563eb 0%, #6366f1 100%) !important;
+    background: linear-gradient(135deg, #4f6df5 0%, #6366f1 100%) !important;
     color: #ffffff !important;
     border: none !important;
-    border-radius: 12px !important;
-    padding: 10px 20px !important;
-    font-size: 13px !important;
+    border-radius: 10px !important;
+    padding: 9px 18px !important;
+    font-size: 12px !important;
     font-weight: 700 !important;
     letter-spacing: 0.04em !important;
     text-transform: uppercase !important;
-    box-shadow: 0 4px 14px rgba(37,99,235,0.30) !important;
-    margin-top: 10px !important;
+    box-shadow: 0 4px 14px rgba(79,109,245,0.28) !important;
+    margin-top: 8px !important;
     transition: all 0.25s ease !important;
 }
 .section-card .stDownloadButton > button:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 8px 22px rgba(37,99,235,0.40) !important;
+    box-shadow: 0 8px 20px rgba(79,109,245,0.38) !important;
 }
 
-/* ── Dataframe styling ── */
 [data-testid="stDataFrame"] {
-    border-radius: 14px !important;
+    border-radius: 12px !important;
     overflow: hidden !important;
-    border: 2px solid #e2e8f0 !important;
+    border: 1px solid #eef1f7 !important;
 }
 
-/* ── Alerts ── */
 div[data-testid="stAlert"] {
-    border-radius: 14px !important; font-size: 14px !important;
-    font-weight: 600 !important;
+    border-radius: 12px !important; font-size: 13px !important; font-weight: 600 !important;
 }
 
-/* ── Back button ── */
-.stButton > button {
-    background: #f1f5f9 !important;
-    color: #475569 !important;
-    border: 2px solid #e2e8f0 !important;
-    border-radius: 16px !important; padding: 13px 24px !important;
-    font-size: 14px !important; font-weight: 700 !important;
-    cursor: pointer !important;
-    transition: all 0.25s ease !important;
-    box-shadow: none !important;
-    letter-spacing: 0.02em !important;
-}
-.stButton > button:hover {
-    background: #e2e8f0 !important;
-    transform: translateY(-2px) !important;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
-}
-
-/* ── Footer ── */
 .footer-text {
     text-align: center; font-size: 12px;
-    color: #94a3b8; margin-top: 24px;
+    color: #94a3b8; margin-top: 10px;
     font-weight: 500; letter-spacing: 0.04em;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar       { width: 6px; }
 ::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 </style>
 """, unsafe_allow_html=True)
 
-# ── Ticker + Navbar ──────────────────────────────────────
-st.markdown("""
-<div class="ticker-wrap">
-  <div class="ticker-track">
-    <span class="ticker-item">📊 Admin Dashboard</span>
-    <span class="ticker-item">👤 User Management</span>
-    <span class="ticker-item">⭐ Ratings Overview</span>
-    <span class="ticker-item">❤️ Liked Places</span>
-    <span class="ticker-item">🏆 Top Destinations</span>
-    <span class="ticker-item">📊 Admin Dashboard</span>
-    <span class="ticker-item">👤 User Management</span>
-    <span class="ticker-item">⭐ Ratings Overview</span>
-    <span class="ticker-item">❤️ Liked Places</span>
-    <span class="ticker-item">🏆 Top Destinations</span>
-  </div>
-</div>
-<div class="navbar-shell"></div>
-<div class="nav-brand">🌍 Smart Travel Planner</div>
-""", unsafe_allow_html=True)
-
-# ── Navbar back button ───────────────────────────────────
-col1, col2, col3 = st.columns([10, 1, 1])
-with col3:
-    if st.button("🏠 Home", key="nav_home"):
-        st.switch_page("welcome.py")
-
-st.markdown('<div class="page-spacer"></div>', unsafe_allow_html=True)
-
-# ── Hero ──────────────────────────────────────────────────
-st.markdown("""
-<div class="dash-hero">
-    <div class="hero-content">
-        <div style="font-size:60px;">📊</div>
-        <h1>Admin Dashboard</h1>
-        <p>Overview of users, ratings, likes and top destinations</p>
-    </div>
-</div>
-""", unsafe_allow_html=True)
-
-st.markdown('<div class="dash-wrap">', unsafe_allow_html=True)
-
+# ---------------------------------------------------
 # Database Connection
+# ---------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_PATH  = os.path.join(BASE_DIR, "tourist.db")
 conn = sqlite3.connect(DB_PATH)
+
+def safe_read(query):
+    try:
+        return pd.read_sql(query, conn)
+    except Exception:
+        return pd.DataFrame()
+
+users_df   = safe_read("SELECT * FROM users")
+ratings_df = safe_read("SELECT * FROM ratings")
+likes_df   = safe_read("SELECT * FROM likes")
+top_places_df = safe_read("""
+    SELECT place, COUNT(*) AS total_ratings
+    FROM ratings GROUP BY place ORDER BY total_ratings DESC
+""")
+
+n_users   = len(users_df)
+n_ratings = len(ratings_df)
+n_likes   = len(likes_df)
+avg_rating = round(ratings_df["rating"].mean(), 1) if "rating" in ratings_df.columns and not ratings_df.empty else 0
+top_place_name  = top_places_df.iloc[0]["place"] if not top_places_df.empty else "—"
+top_place_count = int(top_places_df.iloc[0]["total_ratings"]) if not top_places_df.empty else 0
+n_destinations  = top_places_df["place"].nunique() if not top_places_df.empty else 0
+
+# ---------------------------------------------------
+# Sidebar (dark icon rail)
+# ---------------------------------------------------
+with st.sidebar:
+    st.markdown(
+        '<div class="sb-logo">🌍</div>'
+        '<div class="sb-icon active" title="Dashboard">📊</div>'
+        '<div class="sb-icon" title="Users">👤</div>'
+        '<div class="sb-icon" title="Ratings">⭐</div>'
+        '<div class="sb-icon" title="Likes">❤️</div>'
+        '<div class="sb-icon" title="Export">⬇️</div>',
+        unsafe_allow_html=True
+    )
+
+# ---------------------------------------------------
+# Top bar
+# ---------------------------------------------------
+top_l, top_r = st.columns([10, 1.4])
+with top_l:
+    st.markdown(
+        '<div class="topbar">'
+        '<div>'
+        '<div class="topbar-title">📊 Admin Dashboard</div>'
+        '<div class="topbar-sub">Overview of users, ratings, likes and top destinations</div>'
+        '</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+with top_r:
+    if st.button("🏠 Home", key="nav_home"):
+        st.switch_page("welcome.py")
+
+st.markdown('<div class="dash-wrap">', unsafe_allow_html=True)
+
+# ---------------------------------------------------
+# KPI Cards row
+# ---------------------------------------------------
+k1, k2, k3, k4 = st.columns(4)
+with k1:
+    st.markdown(
+        '<div class="kpi-card">'
+        '<div class="kpi-icon blue">👤</div>'
+        '<div class="kpi-label">Registered users</div>'
+        f'<div class="kpi-value">{n_users:,}</div>'
+        '<div class="kpi-delta">All-time signups</div>'
+        '<div class="kpi-bar-track"><div class="kpi-bar-fill blue" style="width:78%;"></div></div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+with k2:
+    st.markdown(
+        '<div class="kpi-card">'
+        '<div class="kpi-icon yellow">⭐</div>'
+        '<div class="kpi-label">User ratings</div>'
+        f'<div class="kpi-value">{n_ratings:,}</div>'
+        f'<div class="kpi-delta">Avg {avg_rating} stars</div>'
+        '<div class="kpi-bar-track"><div class="kpi-bar-fill yellow" style="width:64%;"></div></div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+with k3:
+    st.markdown(
+        '<div class="kpi-card">'
+        '<div class="kpi-icon pink">❤️</div>'
+        '<div class="kpi-label">Liked places</div>'
+        f'<div class="kpi-value">{n_likes:,}</div>'
+        f'<div class="kpi-delta">{n_destinations} destinations</div>'
+        '<div class="kpi-bar-track"><div class="kpi-bar-fill pink" style="width:55%;"></div></div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+with k4:
+    st.markdown(
+        '<div class="kpi-card">'
+        '<div class="kpi-icon green">🏆</div>'
+        '<div class="kpi-label">Top place</div>'
+        f'<div class="kpi-value">{top_place_name}</div>'
+        f'<div class="kpi-delta">{top_place_count} ratings</div>'
+        '<div class="kpi-bar-track"><div class="kpi-bar-fill green" style="width:88%;"></div></div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+st.write("")
+
+# ---------------------------------------------------
+# Top Destinations bar chart card
+# ---------------------------------------------------
+dest_colors = ["#4f6df5", "#22c08e", "#f4b740", "#a78bfa", "#f15b7e", "#38bdf8"]
+row_chunks = []
+if not top_places_df.empty:
+    max_count = int(top_places_df["total_ratings"].max())
+    for i, row in top_places_df.head(6).iterrows():
+        pct = max(8, int((row["total_ratings"] / max_count) * 100))
+        color = dest_colors[i % len(dest_colors)]
+        row_chunks.append(
+            '<div class="dest-row">'
+            f'<div class="dest-name">{row["place"]}</div>'
+            f'<div class="dest-track"><div class="dest-fill" style="width:{pct}%;background:{color};"></div></div>'
+            f'<div class="dest-count">{int(row["total_ratings"])}</div>'
+            '</div>'
+        )
+    rows_html = "".join(row_chunks)
+else:
+    rows_html = '<div style="color:#94a3b8;font-size:13px;">No rating data available.</div>'
+
+dest_card_html = (
+    '<div class="dest-card">'
+    '<div class="dest-title">🏆 Top Destinations</div>'
+    f'{rows_html}'
+    '</div>'
+)
+st.markdown(dest_card_html, unsafe_allow_html=True)
 
 # -----------------------------
 # Registered Users
 # -----------------------------
 st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.markdown('<h3>👤 Registered Users</h3>', unsafe_allow_html=True)
-try:
-    users = pd.read_sql("SELECT * FROM users", conn)
-
+if not users_df.empty:
     search_users = st.text_input("🔍 Search users", key="search_users", placeholder="Search by any field…")
     if search_users:
-        mask = users.apply(lambda row: row.astype(str).str.contains(search_users, case=False, na=False).any(), axis=1)
-        filtered_users = users[mask]
+        mask = users_df.apply(lambda row: row.astype(str).str.contains(search_users, case=False, na=False).any(), axis=1)
+        filtered_users = users_df[mask]
     else:
-        filtered_users = users
+        filtered_users = users_df
 
     st.dataframe(filtered_users, use_container_width=True)
 
@@ -311,7 +365,7 @@ try:
         mime="text/csv",
         key="download_users"
     )
-except Exception:
+else:
     st.warning("No users found.")
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -320,15 +374,13 @@ st.markdown('</div>', unsafe_allow_html=True)
 # -----------------------------
 st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.markdown('<h3>⭐ User Ratings</h3>', unsafe_allow_html=True)
-try:
-    ratings = pd.read_sql("SELECT * FROM ratings", conn)
-
+if not ratings_df.empty:
     search_ratings = st.text_input("🔍 Search ratings", key="search_ratings", placeholder="Search by any field…")
     if search_ratings:
-        mask = ratings.apply(lambda row: row.astype(str).str.contains(search_ratings, case=False, na=False).any(), axis=1)
-        filtered_ratings = ratings[mask]
+        mask = ratings_df.apply(lambda row: row.astype(str).str.contains(search_ratings, case=False, na=False).any(), axis=1)
+        filtered_ratings = ratings_df[mask]
     else:
-        filtered_ratings = ratings
+        filtered_ratings = ratings_df
 
     st.dataframe(filtered_ratings, use_container_width=True)
 
@@ -339,7 +391,7 @@ try:
         mime="text/csv",
         key="download_ratings"
     )
-except Exception:
+else:
     st.warning("No ratings found.")
 st.markdown('</div>', unsafe_allow_html=True)
 
@@ -348,15 +400,13 @@ st.markdown('</div>', unsafe_allow_html=True)
 # -----------------------------
 st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.markdown('<h3>❤️ Liked Places</h3>', unsafe_allow_html=True)
-try:
-    likes = pd.read_sql("SELECT * FROM likes", conn)
-
+if not likes_df.empty:
     search_likes = st.text_input("🔍 Search likes", key="search_likes", placeholder="Search by any field…")
     if search_likes:
-        mask = likes.apply(lambda row: row.astype(str).str.contains(search_likes, case=False, na=False).any(), axis=1)
-        filtered_likes = likes[mask]
+        mask = likes_df.apply(lambda row: row.astype(str).str.contains(search_likes, case=False, na=False).any(), axis=1)
+        filtered_likes = likes_df[mask]
     else:
-        filtered_likes = likes
+        filtered_likes = likes_df
 
     st.dataframe(filtered_likes, use_container_width=True)
 
@@ -367,30 +417,22 @@ try:
         mime="text/csv",
         key="download_likes"
     )
-except Exception:
+else:
     st.warning("No likes found.")
 st.markdown('</div>', unsafe_allow_html=True)
 
 # -----------------------------
-# Most Rated Places
+# Most Rated Places (table)
 # -----------------------------
 st.markdown('<div class="section-card">', unsafe_allow_html=True)
 st.markdown('<h3>🏆 Most Rated Tourist Places</h3>', unsafe_allow_html=True)
-try:
-    top_places = pd.read_sql("""
-        SELECT place,
-               COUNT(*) AS total_ratings
-        FROM ratings
-        GROUP BY place
-        ORDER BY total_ratings DESC
-    """, conn)
-
+if not top_places_df.empty:
     search_top = st.text_input("🔍 Search places", key="search_top", placeholder="Search by place name…")
     if search_top:
-        mask = top_places.apply(lambda row: row.astype(str).str.contains(search_top, case=False, na=False).any(), axis=1)
-        filtered_top = top_places[mask]
+        mask = top_places_df.apply(lambda row: row.astype(str).str.contains(search_top, case=False, na=False).any(), axis=1)
+        filtered_top = top_places_df[mask]
     else:
-        filtered_top = top_places
+        filtered_top = top_places_df
 
     st.dataframe(filtered_top, use_container_width=True)
 
@@ -401,7 +443,7 @@ try:
         mime="text/csv",
         key="download_top_places"
     )
-except Exception:
+else:
     st.warning("No rating data available.")
 st.markdown('</div>', unsafe_allow_html=True)
 

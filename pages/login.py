@@ -389,18 +389,37 @@ with st.form("login_form"):
     login_btn = st.form_submit_button("🚀  Sign In")
 
 if login_btn:
-    conn   = sqlite3.connect(DB_PATH)
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM users WHERE name=? AND password=?", (username, password))
-    user   = cursor.fetchone()
-    conn.close()
+    # ── Validation ────────────────────────────────────────
+    has_error = False
 
-    if user:
-        st.session_state["username"] = username
-        st.success(f"✅ Welcome back, {username}! Redirecting…")
-        st.switch_page("pages/1_Recommendations.py")
-    else:
-        st.error("❌ Invalid username or password. Please try again.")
+    if not username.strip():
+        st.error("❌ Username cannot be empty.")
+        has_error = True
+    elif not username.replace(" ", "").isalpha():
+        st.error("❌ Username must contain letters only — no numbers or special characters.")
+        has_error = True
+    elif len(username.strip()) < 3:
+        st.error("❌ Username must be at least 3 characters long.")
+        has_error = True
+
+    if not has_error:
+        if not password:
+            st.error("❌ Password cannot be empty.")
+            has_error = True
+
+    if not has_error:
+        conn   = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM users WHERE name=? AND password=?", (username, password))
+        user   = cursor.fetchone()
+        conn.close()
+
+        if user:
+            st.session_state["username"] = username
+            st.success(f"✅ Welcome back, {username}! Redirecting…")
+            st.switch_page("pages/1_Recommendations.py")
+        else:
+            st.error("❌ Invalid username or password. Please try again.")
 
 
 

@@ -223,10 +223,37 @@ div[data-testid="stHorizontalBlock"] .stButton > button:hover {
     background: #e2e8f0 !important; transform: translateY(-1px) !important;
 }
 
-/* Alerts */
+/* Alerts — dark, visible text */
 div[data-testid="stAlert"] {
     border-radius: 12px !important; max-width: 560px; margin: 0 auto;
 }
+/* Error */
+div[data-testid="stAlert"] [data-testid="stAlertContentError"],
+div[data-testid="stAlert"] [data-testid="stAlertContentError"] p,
+div[data-testid="stAlert"] [data-testid="stAlertContentError"] span {
+    color: #7f1d1d !important; font-weight: 600 !important;
+}
+/* Warning */
+div[data-testid="stAlert"] [data-testid="stAlertContentWarning"],
+div[data-testid="stAlert"] [data-testid="stAlertContentWarning"] p,
+div[data-testid="stAlert"] [data-testid="stAlertContentWarning"] span {
+    color: #78350f !important; font-weight: 600 !important;
+}
+/* Success */
+div[data-testid="stAlert"] [data-testid="stAlertContentSuccess"],
+div[data-testid="stAlert"] [data-testid="stAlertContentSuccess"] p,
+div[data-testid="stAlert"] [data-testid="stAlertContentSuccess"] span {
+    color: #14532d !important; font-weight: 600 !important;
+}
+/* Info */
+div[data-testid="stAlert"] [data-testid="stAlertContentInfo"],
+div[data-testid="stAlert"] [data-testid="stAlertContentInfo"] p,
+div[data-testid="stAlert"] [data-testid="stAlertContentInfo"] span {
+    color: #1e3a5f !important; font-weight: 600 !important;
+}
+/* Fallback */
+div[data-testid="stAlert"] p,
+div[data-testid="stAlert"] span { color: inherit !important; }
 
 /* Footer */
 .footer {
@@ -341,7 +368,14 @@ st.markdown("""
 st.markdown('<div class="form-card">', unsafe_allow_html=True)
 st.markdown('<div class="form-title">👤 Create Your Profile</div>', unsafe_allow_html=True)
 
-name             = st.text_input("Full Name",           placeholder="e.g. Arjun Sharma")
+name             = st.text_input("Full Name", placeholder="e.g. Arjun Sharma")
+if name and not name.strip().replace(" ", "").isalpha():
+    st.markdown(
+        '<p style="color:#7f1d1d;background:#fee2e2;border:1px solid #fca5a5;'
+        'border-radius:8px;padding:6px 12px;font-size:13px;font-weight:600;margin-top:-8px;">'
+        '⚠️ Name must contain alphabets only — no numbers or special characters.</p>',
+        unsafe_allow_html=True
+    )
 password         = st.text_input("🔒 Password",         type="password", placeholder="Enter password")
 confirm_password = st.text_input("🔐 Confirm Password", type="password", placeholder="Confirm password")
 age              = st.number_input("Age", min_value=18, max_value=80, value=25, step=1)
@@ -353,6 +387,8 @@ st.markdown("<br>", unsafe_allow_html=True)
 if st.button("🚀  Start Exploring →"):
     if not name.strip():
         st.warning("⚠️ Please enter your name to continue.")
+    elif not name.strip().replace(" ", "").isalpha():
+        st.error("❌ Name must contain alphabets only — no numbers or special characters.")
     elif not password:
         st.warning("⚠️ Please enter a password.")
     elif password != confirm_password:
